@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TravelBharat – Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --saffron:#FF6B00;--saffron-light:#FF8C38;--green:#0A6E3F;--green-light:#12A05C;
+    --navy:#0D1B2A;--navy-mid:#152236;--navy-card:#1C2D40;--navy-border:#243447;
+    --text:#E8EDF2;--text-muted:#7A90A8;--text-dim:#4A6278;--white:#FFFFFF;
+    --danger:#E03E3E;--warning:#F0A500;--success:#12A05C;--sidebar-w:260px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden;}
+
+  /* ── LOGIN ── */
+  #loginScreen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
+  #loginScreen.hidden{opacity:0;pointer-events:none;}
+  .login-box{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:20px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 40px 80px rgba(0,0,0,.5);}
+  .login-logo{text-align:center;margin-bottom:32px;}
+  .login-logo .brand{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--white);}
+  .login-logo .brand span{color:var(--saffron);}
+  .login-logo p{color:var(--text-muted);font-size:13px;margin-top:4px;}
+  .login-badge{display:inline-block;background:rgba(255,107,0,.12);border:1px solid rgba(255,107,0,.3);color:var(--saffron);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;}
+  .field{margin-bottom:20px;}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--text-muted);margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase;}
+  .field input{width:100%;background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+  .field input:focus{border-color:var(--saffron);}
+  .btn-primary{width:100%;background:var(--saffron);color:#fff;border:none;border-radius:10px;padding:14px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s,transform .1s;}
+  .btn-primary:hover{background:var(--saffron-light);}
+  .btn-primary:active{transform:scale(.98);}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+  .login-error{color:var(--danger);font-size:13px;text-align:center;margin-top:12px;display:none;}
+
+  /* ── SIDEBAR ── */
+  #sidebar{width:var(--sidebar-w);background:var(--navy-mid);border-right:1px solid var(--navy-border);display:flex;flex-direction:column;height:100vh;position:fixed;top:0;left:0;z-index:100;}
+  .sidebar-header{padding:24px 20px;border-bottom:1px solid var(--navy-border);}
+  .sidebar-brand{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--white);}
+  .sidebar-brand span{color:var(--saffron);}
+  .sidebar-sub{font-size:11px;color:var(--text-muted);margin-top:2px;letter-spacing:.04em;}
+  .sidebar-nav{padding:16px 12px;flex:1;overflow-y:auto;}
+  .nav-section{font-size:10px;font-weight:600;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;padding:12px 8px 6px;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:background .15s,color .15s;color:var(--text-muted);font-size:14px;font-weight:500;margin-bottom:2px;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
+  .nav-item.active{background:rgba(255,107,0,.15);color:var(--saffron);}
+  .sidebar-footer{padding:16px;border-top:1px solid var(--navy-border);}
+  .admin-badge{display:flex;align-items:center;gap:10px;}
+  .admin-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--saffron),var(--saffron-light));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#fff;}
+  .admin-info .name{font-size:13px;font-weight:600;color:var(--text);}
+  .admin-info .role{font-size:11px;color:var(--text-muted);}
+  .logout-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-dim);padding:4px;border-radius:6px;transition:color .2s;font-size:16px;}
+  .logout-btn:hover{color:var(--danger);}
+
+  /* ── MAIN ── */
+  #main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+  .topbar{background:var(--navy-mid);border-bottom:1px solid var(--navy-border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--white);}
+  .topbar-search{background:var(--navy);border:1px solid var(--navy-border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:220px;}
+  .topbar-search:focus{border-color:var(--saffron);}
+  .content{padding:28px;flex:1;}
+
+  /* ── STAT CARDS ── */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:22px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08;}
+  .stat-card.orange::before{background:var(--saffron);}
+  .stat-card.green::before{background:var(--green-light);}
+  .stat-card.blue::before{background:#3B82F6;}
+  .stat-card.purple::before{background:#8B5CF6;}
+  .stat-card.yellow::before{background:var(--warning);}
+  .stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--white);}
+  .stat-label{font-size:13px;color:var(--text-muted);margin-top:4px;}
+  .stat-change{font-size:12px;margin-top:8px;font-weight:500;}
+  .stat-change.up{color:var(--success);}
+
+  /* ── PANELS ── */
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+  .section-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--white);}
+  .btn-add{background:var(--saffron);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s;}
+  .btn-add:hover{background:var(--saffron-light);}
+  .btn-add:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* ── TABLES ── */
+  .table-wrap{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{border-bottom:1px solid var(--navy-border);}
+  th{padding:14px 18px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;text-align:left;}
+  td{padding:14px 18px;font-size:14px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.04);}
+  tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,.02);}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-heritage{background:rgba(240,165,0,.15);color:var(--warning);}
+  .badge-nature{background:rgba(18,160,92,.15);color:var(--green-light);}
+  .badge-religious{background:rgba(139,92,246,.15);color:#A78BFA;}
+  .badge-adventure{background:rgba(59,130,246,.15);color:#60A5FA;}
+  .badge-visible{background:rgba(18,160,92,.15);color:var(--green-light);}
+  .badge-hidden{background:rgba(224,62,62,.15);color:var(--danger);}
+  .action-btn{background:none;border:1px solid var(--navy-border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;transition:all .15s;color:var(--text-muted);}
+  .action-btn:hover.edit{border-color:var(--saffron);color:var(--saffron);}
+  .action-btn:hover.del{border-color:var(--danger);color:var(--danger);}
+  .action-btn+.action-btn{margin-left:6px;}
+  .action-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* ── PAGINATION ── */
+  .pagination{display:flex;gap:6px;justify-content:center;padding:14px;border-top:1px solid var(--navy-border);flex-wrap:wrap;}
+  .page-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--navy-border);background:var(--navy-mid);color:var(--text-muted);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:all .15s;}
+  .page-btn:hover{border-color:var(--saffron);color:var(--saffron);}
+  .page-btn.active{background:var(--saffron);border-color:var(--saffron);color:#fff;}
+
+  /* ── MODALS ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+  .modal-overlay.open{opacity:1;pointer-events:all;}
+  .modal{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:18px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:32px;transform:translateY(20px);transition:transform .25s;}
+  .modal-overlay.open .modal{transform:translateY(0);}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+  .modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--white);}
+  .modal-close{background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;line-height:1;padding:4px;}
+  .modal-close:hover{color:var(--text);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-grid .full{grid-column:1/-1;}
+  .form-field{display:flex;flex-direction:column;gap:6px;}
+  .form-field label{font-size:12px;font-weight:500;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+  .form-field input,.form-field select,.form-field textarea{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+  .form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--saffron);}
+  .form-field select option{background:var(--navy-mid);}
+  .form-field textarea{resize:vertical;min-height:80px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;}
+  .btn-cancel{background:none;border:1px solid var(--navy-border);border-radius:8px;padding:10px 20px;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .2s;}
+  .btn-cancel:hover{border-color:var(--text-muted);color:var(--text);}
+  .btn-save{background:var(--saffron);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;}
+  .btn-save:hover{background:var(--saffron-light);}
+  .btn-save:disabled{opacity:.6;cursor:not-allowed;}
+
+  /* ── UPLOAD ── */
+  .drop-zone{border:2px dashed var(--navy-border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+  .drop-zone:hover,.drop-zone.dragover{border-color:var(--saffron);background:rgba(255,107,0,.05);}
+  .drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .drop-zone-icon{font-size:28px;margin-bottom:6px;}
+  .drop-zone-text{font-size:13px;color:var(--text-muted);}
+  .drop-zone-text strong{color:var(--saffron);}
+  .upload-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .preview-thumb{position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:1px solid var(--navy-border);}
+  .preview-thumb img{width:100%;height:100%;object-fit:cover;}
+  .preview-remove{position:absolute;top:2px;right:2px;background:rgba(224,62,62,.9);border:none;border-radius:50%;width:16px;height:16px;font-size:10px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+  .upload-progress{height:4px;background:var(--navy-border);border-radius:2px;overflow:hidden;display:none;}
+  .upload-progress-bar{height:100%;background:var(--saffron);border-radius:2px;transition:width .3s;width:0%;}
+  .upload-status{font-size:12px;color:var(--text-muted);text-align:center;}
+  .upload-status.success{color:var(--success);}
+  .upload-status.error{color:var(--danger);}
+  .gallery-manager{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .gallery-item{position:relative;width:72px;height:56px;border-radius:6px;overflow:hidden;border:1px solid var(--navy-border);}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;}
+
+  /* ── REVIEWS PANEL ── */
+  .reviews-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+  .review-filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .review-filter-row select{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer;transition:border-color .2s;}
+  .review-filter-row select:focus{border-color:var(--saffron);}
+  .review-comment-cell{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--text-muted);}
+  .stars-display{color:var(--warning);letter-spacing:2px;font-size:13px;}
+
+  /* ── TOAST ── */
+  #toast{position:fixed;bottom:24px;right:24px;background:var(--navy-card);border:1px solid var(--navy-border);border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.4);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;max-width:380px;}
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.error .toast-dot{background:var(--danger);}
+  #toast .toast-dot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;}
+  .empty{text-align:center;padding:60px 20px;color:var(--text-muted);}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-badge">Admin Access</div>
+      <div class="brand">Travel<span>Bharat</span></div>
+      <p>Sign in to your admin dashboard</p>
+    </div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="admin@travelbharat.in"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••"/>
+    </div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">Sign In to Dashboard</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══ SIDEBAR ════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">Travel<span>Bharat</span></div>
+    <div class="sidebar-sub">Admin Control Panel</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPanel('dashboard',this)">📊 Dashboard</div>
+    <div class="nav-section">Content</div>
+    <div class="nav-item" onclick="showPanel('states',this)">🗺️ States & UTs</div>
+    <div class="nav-item" onclick="showPanel('places',this)">📍 Tourist Places</div>
+    <div class="nav-item" onclick="showPanel('upload',this)">🖼️ Image Upload</div>
+    <div class="nav-section">Community</div>
+    <div class="nav-item" onclick="showPanel('reviews',this)">⭐ Reviews</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="admin-badge">
+      <div class="admin-avatar" id="adminAvatar">A</div>
+      <div class="admin-info">
+        <div class="name" id="adminName">Admin</div>
+        <div class="role" id="adminRole">admin</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="Logout">⏻</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ MAIN ═══════════════════════════════════════════════════ -->
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <input class="topbar-search" type="text" placeholder="Search places…" oninput="globalSearch(this.value)"/>
+      <a href="index.html" style="font-size:13px;color:var(--text-muted);text-decoration:none;transition:color .2s;"
+         onmouseover="this.style.color='var(--saffron)'" onmouseout="this.style.color='var(--text-muted)'">← View Site</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card orange">
+          <div class="stat-value" id="statPlaces">–</div>
+          <div class="stat-label">Tourist Places</div>
+          <div class="stat-change up">Live from API</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-value" id="statStates">–</div>
+          <div class="stat-label">States & UTs</div>
+          <div class="stat-change up">Live from API</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-value" id="statHeritage">–</div>
+          <div class="stat-label">Heritage Sites</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-value" id="statNature">–</div>
+          <div class="stat-label">Nature Sites</div>
+        </div>
+      </div>
+      <!-- Review summary on dashboard -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
+        <div class="stat-card yellow">
+          <div class="stat-value" id="dash-rev-total">–</div>
+          <div class="stat-label">Total Reviews</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-value" id="dash-rev-avg">–</div>
+          <div class="stat-label">Avg Rating</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-value" id="dash-rev-hidden">–</div>
+          <div class="stat-label">Hidden Reviews</div>
+        </div>
+      </div>
+      <div style="background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:24px;">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--white);margin-bottom:16px;">Quick Actions</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn-add" onclick="showPanel('states',document.querySelectorAll('.nav-item')[1]);openStateModal()">+ Add State</button>
+          <button class="btn-add" style="background:var(--green-light);" onclick="showPanel('places',document.querySelectorAll('.nav-item')[2]);openPlaceModal()">+ Add Place</button>
+          <button class="btn-add" style="background:#3B82F6;" onclick="showPanel('upload',document.querySelectorAll('.nav-item')[3])">🖼️ Upload Images</button>
+          <button class="btn-add" style="background:var(--warning);color:#000;" onclick="showPanel('reviews',document.querySelectorAll('.nav-item')[4])">⭐ Moderate Reviews</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATES ── -->
+    <div class="panel" id="panel-states">
+      <div class="section-header">
+        <div class="section-title">States & Union Territories</div>
+        <button class="btn-add" onclick="openStateModal()">+ Add State</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>State Name</th><th>Capital</th><th>Region</th><th>Places</th><th>Actions</th></tr></thead>
+          <tbody id="statesTable"><tr><td colspan="6"><div class="empty">Loading…</div></td></tr></tbody>
+        </table>
+        <div class="pagination" id="states-pagination"></div>
+      </div>
+    </div>
+
+    <!-- ── PLACES ── -->
+    <div class="panel" id="panel-places">
+      <div class="section-header">
+        <div class="section-title">Tourist Places</div>
+        <button class="btn-add" onclick="openPlaceModal()">+ Add Place</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Place</th><th>State</th><th>City</th><th>Category</th><th>Images</th><th>Actions</th></tr></thead>
+          <tbody id="placesTable"><tr><td colspan="7"><div class="empty">Loading…</div></td></tr></tbody>
+        </table>
+        <div class="pagination" id="places-pagination"></div>
+      </div>
+    </div>
+
+    <!-- ── IMAGE UPLOAD ── -->
+    <div class="panel" id="panel-upload">
+      <div class="section-header">
+        <div class="section-title">🖼️ Image Upload</div>
+      </div>
+      <div style="background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:24px;margin-bottom:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--white);margin-bottom:4px;">Upload Single Image</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Upload one image and copy its URL to use in State or Place forms.</div>
+        <div class="drop-zone" id="singleDropZone">
+          <input type="file" id="singleFileInput" accept="image/jpeg,image/png,image/webp,image/gif" onchange="handleSingleFile(this)"/>
+          <div class="drop-zone-icon">📤</div>
+          <div class="drop-zone-text">Drag & drop or <strong>click to browse</strong><br/><span style="font-size:11px;">JPG, PNG, WEBP, GIF — max 10MB</span></div>
+        </div>
+        <div id="singlePreviewWrap" style="display:none;margin-top:12px;">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Preview</div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <img id="singlePreviewImg" src="" alt="" style="width:100px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--navy-border);"/>
+            <div style="flex:1;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">File</div>
+              <div id="singleFileName" style="font-size:13px;color:var(--text);word-break:break-all;"></div>
+            </div>
+          </div>
+          <div class="upload-progress" id="singleProgress" style="margin-top:10px;">
+            <div class="upload-progress-bar" id="singleProgressBar"></div>
+          </div>
+          <div class="upload-status" id="singleStatus"></div>
+          <button onclick="uploadSingle()" style="margin-top:10px;background:var(--saffron);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;"
+            onmouseover="this.style.background='var(--saffron-light)'" onmouseout="this.style.background='var(--saffron)'">Upload Image</button>
+        </div>
+        <div id="singleResult" style="display:none;margin-top:14px;background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">✅ Uploaded — Copy this URL</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="singleResultUrl" readonly style="flex:1;background:var(--navy);border:1px solid var(--navy-border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;font-family:monospace;"/>
+            <button onclick="copyUrl('singleResultUrl')" style="background:var(--saffron);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Copy</button>
+          </div>
+          <img id="singleResultImg" src="" alt="" style="margin-top:10px;max-height:140px;border-radius:8px;border:1px solid var(--navy-border);display:none;"/>
+        </div>
+      </div>
+      <div style="background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:24px;">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--white);margin-bottom:4px;">Upload Multiple Images</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Upload up to 6 images at once for a place gallery.</div>
+        <div class="drop-zone" id="multiDropZone">
+          <input type="file" id="multiFileInput" accept="image/jpeg,image/png,image/webp,image/gif" multiple onchange="handleMultiFiles(this)"/>
+          <div class="drop-zone-icon">🖼️</div>
+          <div class="drop-zone-text">Drag & drop up to <strong>6 images</strong> or click to browse</div>
+        </div>
+        <div class="upload-preview" id="multiPreview"></div>
+        <div id="multiUploadActions" style="display:none;margin-top:12px;">
+          <div class="upload-progress" id="multiProgress"><div class="upload-progress-bar" id="multiProgressBar"></div></div>
+          <div class="upload-status" id="multiStatus" style="margin-top:6px;"></div>
+          <button onclick="uploadMultiple()" style="margin-top:10px;background:var(--saffron);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;"
+            onmouseover="this.style.background='var(--saffron-light)'" onmouseout="this.style.background='var(--saffron)'">Upload All Images</button>
+        </div>
+        <div id="multiResult" style="display:none;margin-top:14px;background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">✅ Uploaded URLs</div>
+          <div id="multiResultList"></div>
+          <button onclick="copyAllUrls()" style="margin-top:10px;background:var(--green-light);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;">Copy All as JSON Array</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REVIEWS ── -->
+    <div class="panel" id="panel-reviews">
+      <div class="section-header">
+        <div class="section-title">⭐ Traveller Reviews</div>
+        <div class="review-filter-row">
+          <select id="reviews-filter-state" onchange="loadAdminReviews()">
+            <option value="">All States</option>
+          </select>
+          <select id="reviews-filter-approved" onchange="loadAdminReviews()">
+            <option value="">All Reviews</option>
+            <option value="true">Visible Only</option>
+            <option value="false">Hidden Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Review Stats -->
+      <div class="reviews-stats-grid">
+        <div class="stat-card orange">
+          <div class="stat-value" id="rev-stat-total">–</div>
+          <div class="stat-label">Total Reviews</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-value" id="rev-stat-avg">–</div>
+          <div class="stat-label">Avg Rating</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-value" id="rev-stat-hidden">–</div>
+          <div class="stat-label">Hidden / Spam</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Reviewer</th>
+              <th>Place</th>
+              <th>State</th>
+              <th>Rating</th>
+              <th>Comment</th>
+              <th>👍</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reviewsTable">
+            <tr><td colspan="10"><div class="empty">Loading reviews…</div></td></tr>
+          </tbody>
+        </table>
+        <div class="pagination" id="reviews-pagination"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══ STATE MODAL ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="stateModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="stateModalTitle">Add State</div>
+      <button class="modal-close" onclick="closeModal('stateModal')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>State ID (slug)</label><input type="text" id="sId" placeholder="e.g. rajasthan"/></div>
+      <div class="form-field"><label>State Name</label><input type="text" id="sName" placeholder="e.g. Rajasthan"/></div>
+      <div class="form-field"><label>Capital</label><input type="text" id="sCapital" placeholder="e.g. Jaipur"/></div>
+      <div class="form-field">
+        <label>Region</label>
+        <select id="sRegion">
+          <option>North India</option><option>South India</option><option>East India</option>
+          <option>West India</option><option>Central India</option><option>Northeast India</option>
+          <option>Union Territory</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Category</label>
+        <select id="sCategory"><option>Heritage</option><option>Nature</option><option>Religious</option><option>Adventure</option></select>
+      </div>
+      <div class="form-field"><label>Emoji</label><input type="text" id="sEmoji" placeholder="🏰"/></div>
+      <div class="form-field"><label>Tagline</label><input type="text" id="sTagline" placeholder="e.g. Land of Kings"/></div>
+      <div class="form-field"><label>Best Season</label><input type="text" id="sSeason" placeholder="e.g. Oct – Mar"/></div>
+      <div class="form-field"><label>Language</label><input type="text" id="sLanguage" placeholder="e.g. Hindi"/></div>
+      <div class="form-field"><label>Cuisine</label><input type="text" id="sCuisine" placeholder="e.g. Dal Baati Churma"/></div>
+      <div class="form-field"><label>Area</label><input type="text" id="sArea" placeholder="e.g. 342,239 km²"/></div>
+      <div class="form-field">
+        <label>Image URL</label>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="sImage" placeholder="https://… or upload above"/>
+          <button onclick="pasteLastUpload('sImage')" style="background:var(--saffron);border:none;border-radius:6px;padding:0 10px;color:#fff;cursor:pointer;font-size:14px;flex-shrink:0;">📋</button>
+        </div>
+      </div>
+      <div class="form-field full"><label>About (description)</label><textarea id="sDesc" placeholder="Brief description…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('stateModal')">Cancel</button>
+      <button class="btn-save" id="saveStateBtn" onclick="saveState()">Save State</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLACE MODAL ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="placeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="placeModalTitle">Add Tourist Place</div>
+      <button class="modal-close" onclick="closeModal('placeModal')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Place ID (slug)</label><input type="text" id="pId" placeholder="e.g. taj-mahal"/></div>
+      <div class="form-field"><label>Place Name</label><input type="text" id="pName" placeholder="e.g. Taj Mahal"/></div>
+      <div class="form-field"><label>City</label><input type="text" id="pCity" placeholder="e.g. Agra"/></div>
+      <div class="form-field"><label>State</label><select id="pState"></select></div>
+      <div class="form-field">
+        <label>Category</label>
+        <select id="pCategory"><option>Heritage</option><option>Nature</option><option>Religious</option><option>Adventure</option></select>
+      </div>
+      <div class="form-field"><label>Best Time to Visit</label><input type="text" id="pBestTime" placeholder="e.g. October – March"/></div>
+      <div class="form-field"><label>Entry Fee</label><input type="text" id="pFee" placeholder="e.g. ₹50"/></div>
+      <div class="form-field">
+        <label>Main Image URL</label>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="pImage" placeholder="https://… or upload above"/>
+          <button onclick="pasteLastUpload('pImage')" style="background:var(--saffron);border:none;border-radius:6px;padding:0 10px;color:#fff;cursor:pointer;font-size:14px;flex-shrink:0;">📋</button>
+        </div>
+      </div>
+      <div class="form-field full">
+        <label>Gallery Images (one URL per line)</label>
+        <textarea id="pImages" placeholder="https://image1.jpg&#10;https://image2.jpg" style="min-height:70px;font-family:monospace;font-size:12px;"></textarea>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Use 📋 after uploading multiple images to paste all URLs at once.</div>
+      </div>
+      <div class="form-field full"><label>Description</label><textarea id="pDesc" placeholder="Description and historical significance…"></textarea></div>
+      <div class="form-field full"><label>Nearby Attractions (comma separated)</label><input type="text" id="pNearby" placeholder="e.g. Agra Fort, Fatehpur Sikri"/></div>
+      <div class="form-field full"><label>Google Maps Link</label><input type="text" id="pMap" placeholder="https://maps.google.com/…"/></div>
+    </div>
+    <div id="existingGallery" style="display:none;margin-top:12px;">
+      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Current Gallery</div>
+      <div class="gallery-manager" id="galleryManagerGrid"></div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--navy-border);">
+      <button onclick="pasteMultiUrls()" style="background:var(--green-light);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+        📋 Paste Last Multi-Upload URLs into Gallery field
+      </button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('placeModal')">Cancel</button>
+      <button class="btn-save" id="savePlaceBtn" onclick="savePlace()">Save Place</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"><div class="toast-dot"></div><span id="toastMsg">Saved successfully!</span></div>
+
+<!-- ══ SCRIPT ════════════════════════════════════════════════ -->
+<script>
+const API_BASE = (function () {
+  if (window.location.protocol === 'file:' || ['5500','5173'].includes(window.location.port)) {
+    return 'http://localhost:5000/api';
+  }
+  return '/api';
+})();
+
+function getToken()  { return localStorage.getItem('tb_admin_token'); }
+function setToken(t) { localStorage.setItem('tb_admin_token', t); }
+function clearToken(){ localStorage.removeItem('tb_admin_token'); }
+
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res  = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const body = await res.json().catch(() => ({}));
+  if (res.status === 401) { clearToken(); showLogin(); throw new Error('Session expired'); }
+  if (!res.ok) throw new Error(body.message || `Request failed (${res.status})`);
+  return body;
+}
+
+async function apiUpload(path, formData) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res  = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: formData });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.message || `Upload failed (${res.status})`);
+  return body;
+}
+
+// ── STATE VARIABLES ──────────────────────────────────────────
+let allStates        = [];
+let allReviews       = [];
+let currentAdmin     = null;
+let editingStateId   = null;
+let editingPlace     = null;
+let lastUploadedUrl  = '';
+let lastUploadedUrls = [];
+let statesPage       = 1;
+let placesPage       = 1;
+let reviewsPage      = 1;
+let lastFilteredPlaces = null;
+const PAGE_SIZE      = 10;
+const REV_PAGE_SIZE  = 12;
+
+// ── LOGIN / LOGOUT ───────────────────────────────────────────
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const btn      = document.getElementById('loginBtn');
+  const errEl    = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const data = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    }).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.message); return j; });
+    setToken(data.token);
+    currentAdmin = data.admin;
+    onLoginSuccess();
+  } catch (err) {
+    errEl.textContent = err.message || 'Invalid credentials.';
+    errEl.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = 'Sign In to Dashboard'; }
+}
+
+function onLoginSuccess() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('adminName').textContent   = currentAdmin?.name  || 'Admin';
+  document.getElementById('adminRole').textContent   = currentAdmin?.role  || 'admin';
+  document.getElementById('adminAvatar').textContent = (currentAdmin?.name || 'A').charAt(0).toUpperCase();
+  loadEverything();
+}
+
+function showLogin() { document.getElementById('loginScreen').classList.remove('hidden'); }
+function doLogout()  { clearToken(); currentAdmin = null; showLogin(); }
+
+async function tryRestoreSession() {
+  const token = getToken();
+  if (!token) return;
+  try {
+    const data = await api('/auth/me');
+    currentAdmin = data.admin;
+    onLoginSuccess();
+  } catch { clearToken(); }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ── NAV ──────────────────────────────────────────────────────
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('topbarTitle').textContent = (el?.textContent || id).trim();
+  if (id === 'reviews') loadAdminReviews();
+}
+
+// ── LOAD EVERYTHING ──────────────────────────────────────────
+async function loadEverything() {
+  try {
+    const json = await api('/states');
+    allStates = json.data || [];
+    renderDashboard();
+    renderStatesTable(1);
+    renderPlacesTable(null, 1);
+    await loadAdminReviews();
+  } catch (err) { showToast(err.message, true); }
+}
+
+function allPlaces() {
+  return allStates.flatMap(s => (s.places || []).map(p => ({ ...p, stateName: s.name, stateId: s.id })));
+}
+
+function renderDashboard() {
+  const places = allPlaces();
+  document.getElementById('statPlaces').textContent   = places.length;
+  document.getElementById('statStates').textContent   = allStates.length;
+  document.getElementById('statHeritage').textContent = places.filter(p => p.category === 'Heritage').length;
+  document.getElementById('statNature').textContent   = places.filter(p => p.category === 'Nature').length;
+}
+
+function updateDashboardReviewStats() {
+  const total  = allReviews.length;
+  const hidden = allReviews.filter(r => !r.isApproved).length;
+  const avg    = total
+    ? (allReviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1)
+    : '–';
+  document.getElementById('dash-rev-total').textContent  = total;
+  document.getElementById('dash-rev-avg').textContent    = avg !== '–' ? avg + ' ★' : '–';
+  document.getElementById('dash-rev-hidden').textContent = hidden;
+}
+
+// ── STATES TABLE ─────────────────────────────────────────────
+function renderStatesTable(page = 1) {
+  statesPage = page;
+  const tb = document.getElementById('statesTable');
+  if (!allStates.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty">No states yet</div></td></tr>';
+    renderStatesPagination(); return;
+  }
+  const start = (page - 1) * PAGE_SIZE;
+  const slice = allStates.slice(start, start + PAGE_SIZE);
+  tb.innerHTML = slice.map((s, i) => `
+    <tr>
+      <td>${start + i + 1}</td>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.capital}</td>
+      <td>${s.region}</td>
+      <td>${(s.places||[]).length}</td>
+      <td>
+        <button class="action-btn edit" onclick="editState('${s.id}')">Edit</button>
+        <button class="action-btn del" onclick="deleteState('${s.id}')"
+          ${currentAdmin?.role !== 'superadmin' ? 'disabled title="Superadmin only"' : ''}>Delete</button>
+      </td>
+    </tr>`).join('');
+  renderStatesPagination();
+}
+
+function renderStatesPagination() {
+  const total = Math.ceil(allStates.length / PAGE_SIZE);
+  const el = document.getElementById('states-pagination');
+  if (total <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = Array.from({ length: total }, (_, i) => `
+    <button class="page-btn${statesPage === i+1 ? ' active' : ''}" onclick="renderStatesTable(${i+1})">${i+1}</button>`).join('');
+}
+
+// ── PLACES TABLE ─────────────────────────────────────────────
+function renderPlacesTable(filtered = null, page = 1) {
+  placesPage = page;
+  if (filtered !== null) lastFilteredPlaces = filtered;
+  const catClass = { Heritage:'badge-heritage', Nature:'badge-nature', Religious:'badge-religious', Adventure:'badge-adventure' };
+  const places = filtered !== null ? filtered : (lastFilteredPlaces || allPlaces());
+  const tb = document.getElementById('placesTable');
+  if (!places.length) {
+    tb.innerHTML = '<tr><td colspan="7"><div class="empty">No places found</div></td></tr>';
+    renderPlacesPagination(0); return;
+  }
+  const start = (page - 1) * PAGE_SIZE;
+  const slice = places.slice(start, start + PAGE_SIZE);
+  tb.innerHTML = slice.map((p, i) => `
+    <tr>
+      <td>${start + i + 1}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.stateName}</td>
+      <td>${p.city}</td>
+      <td><span class="badge ${catClass[p.category]||''}">${p.category}</span></td>
+      <td style="color:var(--text-muted);font-size:12px;">${(p.images&&p.images.length)?p.images.length+' imgs':p.image?'1 img':'–'}</td>
+      <td>
+        <button class="action-btn edit" onclick="editPlace('${p.stateId}','${p.id}')">Edit</button>
+        <button class="action-btn del"  onclick="deletePlace('${p.stateId}','${p.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+  renderPlacesPagination(places.length);
+}
+
+function renderPlacesPagination(total) {
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const el = document.getElementById('places-pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = Array.from({ length: pages }, (_, i) => `
+    <button class="page-btn${placesPage === i+1 ? ' active' : ''}" onclick="renderPlacesTable(null,${i+1})">${i+1}</button>`).join('');
+}
+
+// ── STATE MODAL ───────────────────────────────────────────────
+function openStateModal(id = null) {
+  editingStateId = id;
+  document.getElementById('stateModalTitle').textContent = id ? 'Edit State' : 'Add State';
+  if (id) {
+    const s = allStates.find(x => x.id === id);
+    document.getElementById('sId').value = s.id; document.getElementById('sId').disabled = true;
+    document.getElementById('sName').value     = s.name;
+    document.getElementById('sCapital').value  = s.capital;
+    document.getElementById('sRegion').value   = s.region;
+    document.getElementById('sCategory').value = s.category;
+    document.getElementById('sEmoji').value    = s.emoji    || '';
+    document.getElementById('sTagline').value  = s.tagline  || '';
+    document.getElementById('sSeason').value   = s.bestTime || '';
+    document.getElementById('sLanguage').value = s.language || '';
+    document.getElementById('sCuisine').value  = s.cuisine  || '';
+    document.getElementById('sArea').value     = s.area     || '';
+    document.getElementById('sImage').value    = s.image    || '';
+    document.getElementById('sDesc').value     = s.about    || '';
+  } else {
+    document.getElementById('sId').disabled = false;
+    ['sId','sName','sCapital','sTagline','sSeason','sLanguage','sCuisine','sArea','sImage','sDesc','sEmoji'].forEach(f => document.getElementById(f).value='');
+    document.getElementById('sRegion').value   = 'North India';
+    document.getElementById('sCategory').value = 'Heritage';
+  }
+  document.getElementById('stateModal').classList.add('open');
+}
+function editState(id) { openStateModal(id); }
+
+async function saveState() {
+  const payload = {
+    id: document.getElementById('sId').value.trim(),
+    name: document.getElementById('sName').value.trim(),
+    capital: document.getElementById('sCapital').value.trim(),
+    region: document.getElementById('sRegion').value,
+    category: document.getElementById('sCategory').value,
+    emoji: document.getElementById('sEmoji').value.trim() || '📍',
+    tagline: document.getElementById('sTagline').value.trim(),
+    bestTime: document.getElementById('sSeason').value.trim(),
+    language: document.getElementById('sLanguage').value.trim(),
+    cuisine: document.getElementById('sCuisine').value.trim(),
+    area: document.getElementById('sArea').value.trim(),
+    image: document.getElementById('sImage').value.trim(),
+    heroImage: document.getElementById('sImage').value.trim(),
+    about: document.getElementById('sDesc').value.trim(),
+  };
+  if (!payload.id || !payload.name || !payload.capital || !payload.tagline || !payload.about) {
+    showToast('Please fill all required fields.', true); return;
+  }
+  const btn = document.getElementById('saveStateBtn');
+  btn.disabled = true;
+  try {
+    if (editingStateId) {
+      await api(`/states/${editingStateId}`, { method: 'PUT', body: JSON.stringify(payload) });
+      showToast('State updated!');
+    } else {
+      await api('/states', { method: 'POST', body: JSON.stringify(payload) });
+      showToast('State added!');
+    }
+    closeModal('stateModal'); await loadEverything();
+  } catch (err) { showToast(err.message, true); }
+  finally { btn.disabled = false; }
+}
+
+async function deleteState(id) {
+  if (!confirm('Delete this state? (soft delete)')) return;
+  try { await api(`/states/${id}`, { method: 'DELETE' }); showToast('State deactivated.'); await loadEverything(); }
+  catch (err) { showToast(err.message, true); }
+}
+
+// ── PLACE MODAL ───────────────────────────────────────────────
+function populateStateSelect(selected = '') {
+  const sel = document.getElementById('pState');
+  sel.innerHTML = allStates.map(s => `<option value="${s.id}" ${s.id===selected?'selected':''}>${s.name}</option>`).join('');
+}
+
+function openPlaceModal(stateId = null, placeId = null) {
+  populateStateSelect(stateId || (allStates[0]?.id ?? ''));
+  editingPlace = (stateId && placeId) ? { stateId, placeId } : null;
+  document.getElementById('placeModalTitle').textContent = editingPlace ? 'Edit Place' : 'Add Tourist Place';
+  document.getElementById('existingGallery').style.display = 'none';
+  if (editingPlace) {
+    const st = allStates.find(s => s.id === stateId);
+    const p  = (st?.places||[]).find(x => x.id === placeId);
+    document.getElementById('pId').value = p.id; document.getElementById('pId').disabled = true;
+    document.getElementById('pName').value     = p.name;
+    document.getElementById('pCity').value     = p.city;
+    document.getElementById('pState').value    = stateId;
+    document.getElementById('pCategory').value = p.category;
+    document.getElementById('pBestTime').value = p.bestTime;
+    document.getElementById('pFee').value      = p.entryFee || '';
+    document.getElementById('pImage').value    = p.image    || '';
+    document.getElementById('pImages').value   = (p.images||[]).join('\n');
+    document.getElementById('pDesc').value     = p.desc     || '';
+    document.getElementById('pNearby').value   = (p.nearby||[]).join(', ');
+    document.getElementById('pMap').value      = p.mapLink  || '';
+    const imgs = p.images || (p.image ? [p.image] : []);
+    if (imgs.length) {
+      document.getElementById('existingGallery').style.display = 'block';
+      document.getElementById('galleryManagerGrid').innerHTML = imgs.map((src, idx) => `
+        <div class="gallery-item"><img src="${src}" alt="img${idx}" onerror="this.style.background='#2C3E50'"/></div>`).join('');
+    }
+  } else {
+    document.getElementById('pId').disabled = false;
+    ['pId','pName','pCity','pBestTime','pFee','pImage','pImages','pDesc','pNearby','pMap'].forEach(f => document.getElementById(f).value='');
+    document.getElementById('pCategory').value = 'Heritage';
+  }
+  document.getElementById('placeModal').classList.add('open');
+}
+function editPlace(stateId, placeId) { openPlaceModal(stateId, placeId); }
+
+async function savePlace() {
+  const stateId   = document.getElementById('pState').value;
+  const imagesRaw = document.getElementById('pImages').value.trim();
+  const images    = imagesRaw ? imagesRaw.split('\n').map(s=>s.trim()).filter(Boolean) : [];
+  const payload   = {
+    id:       document.getElementById('pId').value.trim(),
+    name:     document.getElementById('pName').value.trim(),
+    city:     document.getElementById('pCity').value.trim(),
+    category: document.getElementById('pCategory').value,
+    bestTime: document.getElementById('pBestTime').value.trim(),
+    entryFee: document.getElementById('pFee').value.trim() || 'Check locally',
+    image:    document.getElementById('pImage').value.trim(),
+    images, desc: document.getElementById('pDesc').value.trim(),
+    nearby:   document.getElementById('pNearby').value.split(',').map(s=>s.trim()).filter(Boolean),
+    mapLink:  document.getElementById('pMap').value.trim(),
+  };
+  if (!payload.id || !payload.name || !payload.city || !payload.bestTime || !payload.desc) {
+    showToast('Please fill all required fields.', true); return;
+  }
+  const btn = document.getElementById('savePlaceBtn');
+  btn.disabled = true;
+  try {
+    if (editingPlace) {
+      await api(`/states/${editingPlace.stateId}/places/${editingPlace.placeId}`, { method:'PUT', body:JSON.stringify(payload) });
+      showToast('Place updated!');
+    } else {
+      await api(`/states/${stateId}/places`, { method:'POST', body:JSON.stringify(payload) });
+      showToast('Place added!');
+    }
+    closeModal('placeModal'); await loadEverything();
+  } catch (err) { showToast(err.message, true); }
+  finally { btn.disabled = false; }
+}
+
+async function deletePlace(stateId, placeId) {
+  if (!confirm('Delete this place?')) return;
+  try { await api(`/states/${stateId}/places/${placeId}`, { method:'DELETE' }); showToast('Place removed.'); await loadEverything(); }
+  catch (err) { showToast(err.message, true); }
+}
+
+// ── GLOBAL SEARCH ─────────────────────────────────────────────
+function globalSearch(q) {
+  if (!q) { lastFilteredPlaces = null; renderPlacesTable(null, 1); return; }
+  const lower   = q.toLowerCase();
+  const results = allPlaces().filter(p =>
+    p.name.toLowerCase().includes(lower) ||
+    p.stateName.toLowerCase().includes(lower) ||
+    p.city.toLowerCase().includes(lower)
+  );
+  renderPlacesTable(results, 1);
+}
+
+// ══════════════════════════════════════════════
+// ── REVIEWS ADMIN ─────────────────────────────
+// ══════════════════════════════════════════════
+async function loadAdminReviews() {
+  const stateId  = document.getElementById('reviews-filter-state')?.value  || '';
+  const approved = document.getElementById('reviews-filter-approved')?.value || '';
+  let url = '/reviews/all?';
+  if (stateId)         url += `stateId=${stateId}&`;
+  if (approved !== '') url += `approved=${approved}&`;
+  url = url.replace(/[&?]$/, '');
+
+  try {
+    const data = await api(url);
+    allReviews = data.data || [];
+    renderReviewsTable(1);
+    updateReviewStats();
+    updateDashboardReviewStats();
+    populateStateFilterDropdown();
+  } catch (err) {
+    // Reviews API might not exist yet — fail silently
+    console.warn('Reviews API:', err.message);
+    document.getElementById('reviewsTable').innerHTML =
+      '<tr><td colspan="10"><div class="empty">Reviews API not connected yet.<br/>Add the reviews route to your backend.</div></td></tr>';
+  }
+}
+
+function updateReviewStats() {
+  const total  = allReviews.length;
+  const hidden = allReviews.filter(r => !r.isApproved).length;
+  const avg    = total
+    ? (allReviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1)
+    : '–';
+  document.getElementById('rev-stat-total').textContent  = total;
+  document.getElementById('rev-stat-avg').textContent    = avg !== '–' ? avg + ' ★' : '–';
+  document.getElementById('rev-stat-hidden').textContent = hidden;
+}
+
+function populateStateFilterDropdown() {
+  const sel = document.getElementById('reviews-filter-state');
+  if (!sel) return;
+  // Keep existing options, only add new ones
+  const existing = new Set(Array.from(sel.options).map(o => o.value));
+  const states   = [...new Set(allReviews.map(r => ({ id: r.stateId, name: r.stateName })))];
+  states.forEach(s => {
+    if (!existing.has(s.id)) {
+      const opt = document.createElement('option');
+      opt.value = s.id; opt.textContent = s.name;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+function renderReviewsTable(page = 1) {
+  reviewsPage = page;
+  const tb    = document.getElementById('reviewsTable');
+  if (!allReviews.length) {
+    tb.innerHTML = '<tr><td colspan="10"><div class="empty">No reviews found.</div></td></tr>';
+    document.getElementById('reviews-pagination').innerHTML = '';
+    return;
+  }
+  const stars  = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+  const start  = (page - 1) * REV_PAGE_SIZE;
+  const slice  = allReviews.slice(start, start + REV_PAGE_SIZE);
+
+  tb.innerHTML = slice.map((r, i) => {
+    const date = new Date(r.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    return `
+    <tr style="${!r.isApproved ? 'opacity:0.5' : ''}">
+      <td>${start + i + 1}</td>
+      <td><strong>${r.name}</strong></td>
+      <td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.placeName}</td>
+      <td>${r.stateName}</td>
+      <td><span class="stars-display" title="${r.rating}/5">${stars(r.rating)}</span></td>
+      <td class="review-comment-cell" title="${r.comment}">${r.comment}</td>
+      <td style="text-align:center;color:var(--text-muted)">${r.helpful || 0}</td>
+      <td><span class="badge ${r.isApproved ? 'badge-visible' : 'badge-hidden'}">${r.isApproved ? 'Visible' : 'Hidden'}</span></td>
+      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">${date}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn edit" onclick="toggleReviewApproval('${r._id}')">
+          ${r.isApproved ? 'Hide' : 'Show'}
+        </button>
+        <button class="action-btn del" onclick="deleteAdminReview('${r._id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Pagination
+  const totalPages = Math.ceil(allReviews.length / REV_PAGE_SIZE);
+  const pagEl      = document.getElementById('reviews-pagination');
+  pagEl.innerHTML  = totalPages <= 1 ? '' : Array.from({ length: totalPages }, (_, i) => `
+    <button class="page-btn${reviewsPage === i+1 ? ' active' : ''}" onclick="renderReviewsTable(${i+1})">${i+1}</button>`).join('');
+}
+
+async function toggleReviewApproval(id) {
+  try {
+    await api(`/reviews/${id}/approve`, { method: 'PATCH' });
+    showToast('Review visibility updated.');
+    await loadAdminReviews();
+  } catch (err) { showToast(err.message, true); }
+}
+
+async function deleteAdminReview(id) {
+  if (!confirm('Delete this review permanently?')) return;
+  try {
+    await api(`/reviews/${id}`, { method: 'DELETE' });
+    showToast('Review deleted.');
+    await loadAdminReviews();
+  } catch (err) { showToast(err.message, true); }
+}
+
+// ── IMAGE UPLOAD ──────────────────────────────────────────────
+let singleFile = null;
+let multiFiles = [];
+
+function handleSingleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('File too large. Max 10MB.', true); return; }
+  singleFile = file;
+  document.getElementById('singlePreviewImg').src       = URL.createObjectURL(file);
+  document.getElementById('singleFileName').textContent = `${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  document.getElementById('singlePreviewWrap').style.display = 'block';
+  document.getElementById('singleResult').style.display      = 'none';
+  document.getElementById('singleStatus').textContent        = '';
+  document.getElementById('singleStatus').className          = 'upload-status';
+}
+
+async function uploadSingle() {
+  if (!singleFile) return;
+  const prog = document.getElementById('singleProgress');
+  const bar  = document.getElementById('singleProgressBar');
+  const stat = document.getElementById('singleStatus');
+  prog.style.display = 'block'; bar.style.width = '30%';
+  stat.textContent = 'Uploading…'; stat.className = 'upload-status';
+  try {
+    const fd = new FormData(); fd.append('image', singleFile);
+    bar.style.width = '70%';
+    const data = await apiUpload('/upload', fd);
+    bar.style.width = '100%';
+    stat.textContent = '✅ Upload successful!'; stat.className = 'upload-status success';
+    lastUploadedUrl = data.data.url;
+    document.getElementById('singleResultUrl').value = data.data.url;
+    const ri = document.getElementById('singleResultImg');
+    ri.src = data.data.url; ri.style.display = 'block';
+    document.getElementById('singleResult').style.display = 'block';
+    showToast('Image uploaded!');
+  } catch (err) {
+    bar.style.width = '0%';
+    stat.textContent = '❌ ' + err.message; stat.className = 'upload-status error';
+    showToast(err.message, true);
+  }
+}
+
+function handleMultiFiles(input) {
+  const files = Array.from(input.files).slice(0, 6);
+  multiFiles  = files;
+  const preview = document.getElementById('multiPreview');
+  preview.innerHTML = files.map((f, i) => `
+    <div class="preview-thumb" id="mThumb_${i}">
+      <img src="${URL.createObjectURL(f)}" alt="${f.name}"/>
+      <button class="preview-remove" onclick="removeMultiFile(${i})">×</button>
+    </div>`).join('');
+  document.getElementById('multiUploadActions').style.display = files.length ? 'block' : 'none';
+  document.getElementById('multiResult').style.display        = 'none';
+  document.getElementById('multiStatus').textContent          = '';
+}
+
+function removeMultiFile(idx) {
+  multiFiles.splice(idx, 1);
+  document.getElementById('multiPreview').innerHTML = multiFiles.map((f, i) => `
+    <div class="preview-thumb" id="mThumb_${i}">
+      <img src="${URL.createObjectURL(f)}" alt="${f.name}"/>
+      <button class="preview-remove" onclick="removeMultiFile(${i})">×</button>
+    </div>`).join('');
+  document.getElementById('multiUploadActions').style.display = multiFiles.length ? 'block' : 'none';
+}
+
+async function uploadMultiple() {
+  if (!multiFiles.length) return;
+  const prog = document.getElementById('multiProgress');
+  const bar  = document.getElementById('multiProgressBar');
+  const stat = document.getElementById('multiStatus');
+  prog.style.display = 'block'; bar.style.width = '30%';
+  stat.textContent = `Uploading ${multiFiles.length} image(s)…`; stat.className = 'upload-status';
+  try {
+    const fd = new FormData();
+    multiFiles.forEach(f => fd.append('images', f));
+    bar.style.width = '75%';
+    const data = await apiUpload('/upload/multiple', fd);
+    bar.style.width = '100%';
+    const urls = data.data.map(d => d.url);
+    lastUploadedUrls = urls;
+    stat.textContent = `✅ ${urls.length} image(s) uploaded!`; stat.className = 'upload-status success';
+    document.getElementById('multiResultList').innerHTML = urls.map(url => `
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+        <img src="${url}" style="width:40px;height:30px;object-fit:cover;border-radius:4px;border:1px solid var(--navy-border);"/>
+        <input type="text" value="${url}" readonly style="flex:1;background:var(--navy);border:1px solid var(--navy-border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;font-family:monospace;"/>
+        <button onclick="copyUrl_val('${url.replace(/'/g,"\\'")}') " style="background:var(--saffron);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;">Copy</button>
+      </div>`).join('');
+    document.getElementById('multiResult').style.display = 'block';
+    showToast(`${urls.length} images uploaded!`);
+  } catch (err) {
+    bar.style.width = '0%';
+    stat.textContent = '❌ ' + err.message; stat.className = 'upload-status error';
+    showToast(err.message, true);
+  }
+}
+
+function copyUrl(inputId) {
+  const el = document.getElementById(inputId);
+  el.select(); document.execCommand('copy');
+  showToast('URL copied!');
+}
+
+function copyUrl_val(url) {
+  navigator.clipboard.writeText(url)
+    .then(() => showToast('URL copied!'))
+    .catch(() => {
+      const tmp = document.createElement('textarea');
+      tmp.value = url; document.body.appendChild(tmp); tmp.select();
+      document.execCommand('copy'); document.body.removeChild(tmp);
+      showToast('URL copied!');
+    });
+}
+
+function copyAllUrls() {
+  const json = JSON.stringify(lastUploadedUrls, null, 2);
+  navigator.clipboard.writeText(json)
+    .then(() => showToast('All URLs copied as JSON array!'))
+    .catch(() => {
+      const tmp = document.createElement('textarea');
+      tmp.value = json; document.body.appendChild(tmp); tmp.select();
+      document.execCommand('copy'); document.body.removeChild(tmp);
+      showToast('All URLs copied!');
+    });
+}
+
+function pasteLastUpload(fieldId) {
+  if (!lastUploadedUrl) { showToast('No image uploaded yet.', true); return; }
+  document.getElementById(fieldId).value = lastUploadedUrl;
+  showToast('URL pasted!');
+}
+
+function pasteMultiUrls() {
+  if (!lastUploadedUrls.length) { showToast('No multi-upload done yet.', true); return; }
+  document.getElementById('pImages').value = lastUploadedUrls.join('\n');
+  showToast(`${lastUploadedUrls.length} URLs pasted!`);
+}
+
+// ── DRAG & DROP ───────────────────────────────────────────────
+['singleDropZone','multiDropZone'].forEach(id => {
+  const zone = document.getElementById(id);
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (id === 'singleDropZone') {
+      document.getElementById('singleFileInput').files = files;
+      handleSingleFile(document.getElementById('singleFileInput'));
+    } else {
+      document.getElementById('multiFileInput').files = files;
+      handleMultiFiles(document.getElementById('multiFileInput'));
+    }
+  });
+});
+
+// ── MODAL HELPERS ─────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m =>
+  m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); })
+);
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, isError = false) {
+  clearTimeout(toastTimer);
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.toggle('error', !!isError);
+  toast.classList.add('show');
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+tryRestoreSession();
+</script>
+</body>
+</html>

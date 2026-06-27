@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ══ PRIMARY META ══════════════════════════════════════════ -->
+  <title>TravelBharat — Explore India State by State</title>
+  <meta name="description"
+        content="Discover India's 28 states and 8 Union Territories with TravelBharat — your guide to heritage sites, nature escapes, religious destinations and adventure spots across Incredible India." />
+  <meta name="keywords"
+        content="India tourism, travel India, Indian states, tourist places India, heritage sites India, nature destinations India, religious places India, adventure travel India, TravelBharat" />
+  <meta name="author" content="TravelBharat" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.travelbharat.in/" />
+
+  <!-- ══ OPEN GRAPH (Facebook / WhatsApp / LinkedIn) ══════════ -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="TravelBharat" />
+  <meta property="og:url"         content="https://www.travelbharat.in/" />
+  <meta property="og:title"       content="TravelBharat — Explore India State by State" />
+  <meta property="og:description" content="Your definitive guide to tourist destinations across all Indian states — heritage, nature, religious, and adventure travel in one place." />
+  <meta property="og:image"       content="https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&q=80" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"    content="Taj Mahal at sunrise — TravelBharat" />
+  <meta property="og:locale"       content="en_IN" />
+
+  <!-- ══ TWITTER CARD ═════════════════════════════════════════ -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="@TravelBharat" />
+  <meta name="twitter:title"       content="TravelBharat — Explore India State by State" />
+  <meta name="twitter:description" content="Your definitive guide to tourist destinations across all Indian states — heritage, nature, religious, and adventure travel." />
+  <meta name="twitter:image"       content="https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&q=80" />
+  <meta name="twitter:image:alt"   content="Taj Mahal at sunrise — TravelBharat" />
+
+  <!-- ══ STRUCTURED DATA — WebSite + SearchAction ═════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "TravelBharat",
+    "url": "https://www.travelbharat.in/",
+    "description": "Discover India's tourist destinations state by state — heritage, nature, religious and adventure travel.",
+    "inLanguage": "en-IN",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.travelbharat.in/?search={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- ══ STRUCTURED DATA — Organization ══════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "TravelBharat",
+    "url": "https://www.travelbharat.in/",
+    "logo": "https://www.travelbharat.in/logo.png",
+    "sameAs": [
+      "https://www.facebook.com/travelbharat",
+      "https://www.instagram.com/travelbharat",
+      "https://twitter.com/travelbharat"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "info@travelbharat.in",
+      "contactType": "customer support"
+    }
+  }
+  </script>
+
+  <!-- ══ FAVICON ═══════════════════════════════════════════════ -->
+  <link rel="icon"             href="/favicon.ico" />
+  <link rel="icon"             type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180"  href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#FF6B1A" />
+
+  <!-- ══ FONTS & STYLES ════════════════════════════════════════ -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Admin Login Button ── */
+    .btn-admin {
+      background: transparent;
+      color: var(--saffron);
+      border: 1.5px solid var(--saffron);
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-admin:hover {
+      background: var(--saffron);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(255,107,26,0.3);
+    }
+
+    /* ── Admin Modal Overlay ── */
+    #admin-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,18,8,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #admin-modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ── Admin Login Card ── */
+    .admin-login-card {
+      background: #FFFBF5;
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 80px rgba(26,18,8,0.3);
+      transform: translateY(24px) scale(0.97);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+    #admin-modal-overlay.open .admin-login-card {
+      transform: translateY(0) scale(1);
+    }
+    .admin-login-logo { text-align: center; margin-bottom: 28px; }
+    .admin-login-logo .brand { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: var(--saffron); }
+    .admin-login-logo .brand span { color: var(--dark); }
+    .admin-login-logo .subtitle { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
+    .admin-badge-pill { display: inline-block; background: rgba(255,107,26,0.1); border: 1px solid rgba(255,107,26,0.3); color: var(--saffron); font-size: 11px; font-weight: 600; padding: 4px 14px; border-radius: 50px; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+    .admin-field { margin-bottom: 18px; }
+    .admin-field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 7px; letter-spacing: 0.8px; text-transform: uppercase; }
+    .admin-field input { width: 100%; background: white; border: 1.5px solid #EDE0D0; border-radius: 10px; padding: 11px 15px; color: var(--dark); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+    .admin-field input:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(255,107,26,0.1); }
+    .admin-login-btn { width: 100%; background: var(--saffron); color: white; border: none; border-radius: 50px; padding: 13px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+    .admin-login-btn:hover { background: #E85A00; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,26,0.35); }
+    .admin-login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .admin-login-error { color: #E03E3E; font-size: 13px; text-align: center; margin-top: 12px; display: none; padding: 8px 12px; background: rgba(224,62,62,0.08); border-radius: 8px; }
+    .admin-modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; color: var(--muted); cursor: pointer; line-height: 1; padding: 4px 6px; border-radius: 6px; transition: color 0.2s; }
+    .admin-modal-close:hover { color: var(--dark); }
+    .admin-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 16px; padding-top: 16px; border-top: 1px solid #EDE0D0; }
+
+    /* Mobile menu */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: #FFFBF5;
+      border-bottom: 1px solid #EDE0D0;
+      z-index: 999;
+      padding: 16px 5%;
+      box-shadow: 0 8px 24px rgba(26,18,8,0.1);
+    }
+    .mobile-menu.open { display: block; }
+    .mobile-menu ul { list-style: none; }
+    .mobile-menu ul li { border-bottom: 1px solid #EDE0D0; }
+    .mobile-menu ul li:last-child { border-bottom: none; }
+    .mobile-menu ul li a { display: block; padding: 14px 8px; text-decoration: none; color: #3D2B1A; font-weight: 500; font-size: 0.95rem; transition: color 0.2s; }
+    .mobile-menu ul li a:hover { color: #FF6B1A; }
+    .mobile-menu .admin-mobile-link { background: rgba(255,107,26,0.08); border-radius: 10px; margin: 8px 0 0; }
+    .mobile-menu .admin-mobile-link a { color: var(--saffron) !important; font-weight: 600; }
+  </style>
+</head>
+<body id="home-page">
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a class="navbar-brand" href="index.html">Travel<span>Bharat</span></a>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#states-section">States</a></li>
+      <li><a href="#categories-section">Categories</a></li>
+      <li><a href="#gems-section">Hidden Gems</a></li>
+      <li><a href="map.html">🗺️ Map Explorer</a></li>
+    </ul>
+    <div class="navbar-actions">
+      <button class="btn-search" onclick="document.getElementById('hero-search-input').focus()">🔍</button>
+      <a href="#search-section" class="btn-primary">Plan Trip</a>
+      <button class="btn-admin" onclick="openAdminModal()">🔐 Admin</button>
+    </div>
+    <button class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <ul>
+      <li><a href="index.html"          onclick="document.getElementById('mobile-menu').classList.remove('open')">Home</a></li>
+      <li><a href="#states-section"     onclick="document.getElementById('mobile-menu').classList.remove('open')">States</a></li>
+      <li><a href="#categories-section" onclick="document.getElementById('mobile-menu').classList.remove('open')">Categories</a></li>
+      <li><a href="#gems-section"       onclick="document.getElementById('mobile-menu').classList.remove('open')">Hidden Gems</a></li>
+      <li><a href="map.html"            onclick="document.getElementById('mobile-menu').classList.remove('open')">🗺️ Map Explorer</a></li>
+      <li class="admin-mobile-link">
+        <a href="#" onclick="document.getElementById('mobile-menu').classList.remove('open'); openAdminModal();">🔐 Admin Login</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ADMIN LOGIN MODAL -->
+  <div id="admin-modal-overlay" onclick="if(event.target===this)closeAdminModal()">
+    <div class="admin-login-card">
+      <button class="admin-modal-close" onclick="closeAdminModal()">✕</button>
+      <div class="admin-login-logo">
+        <div class="admin-badge-pill">Admin Access</div>
+        <div class="brand">Travel<span>Bharat</span></div>
+        <div class="subtitle">Sign in to manage content</div>
+      </div>
+      <div class="admin-field">
+        <label>Email Address</label>
+        <input type="email" id="admin-email" placeholder="admin@travelbharat.in" />
+      </div>
+      <div class="admin-field">
+        <label>Password</label>
+        <input type="password" id="admin-password" placeholder="••••••••" />
+      </div>
+      <button class="admin-login-btn" id="admin-login-btn" onclick="doAdminLogin()">Sign In to Dashboard</button>
+      <div class="admin-login-error" id="admin-login-error"></div>
+      <div class="admin-hint">You will be redirected to the Admin Dashboard</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-bg-img"></div>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">✦ INCREDIBLE INDIA ✦</div>
+      <h1 class="hero-title">Discover the<br/><em>Magic of India</em></h1>
+      <p class="hero-subtitle">Journey through the soul of the subcontinent where ancient tradition meets modern vibrancy.</p>
+      <div class="hero-search">
+        <span class="hero-search-icon">🔍</span>
+        <input type="text" id="hero-search-input" placeholder="Search destinations, states, categories…" />
+        <button class="btn-primary" id="hero-search-btn">Explore</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item"><span class="stat-number">28+</span><span class="stat-label">States</span></div>
+        <div class="stat-item"><span class="stat-number">200+</span><span class="stat-label">Destinations</span></div>
+        <div class="stat-item"><span class="stat-number">4</span><span class="stat-label">Categories</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="categories-section" id="categories-section">
+    <div class="section-header">
+      <div class="section-tag">Browse By Type</div>
+      <h2 class="section-title">Explore Categories</h2>
+    </div>
+    <div class="categories-grid" id="categories-grid"></div>
+  </section>
+
+  <!-- POPULAR STATES -->
+  <section class="states-section" id="states-section">
+    <div class="section-header-row">
+      <div class="section-header">
+        <div class="section-tag">Trending</div>
+        <h2 class="section-title">Popular States</h2>
+        <p class="section-sub">Iconic regions that define the Indian experience.</p>
+      </div>
+      <a href="#all-states-section" class="view-all">View All →</a>
+    </div>
+    <div class="states-grid" id="popular-states-grid"></div>
+  </section>
+
+  <!-- GEMS -->
+  <section class="gems-section" id="gems-section">
+    <div class="section-header">
+      <div class="section-tag">Off the Beaten Path</div>
+      <h2 class="section-title">Lesser-Known Gems</h2>
+      <p class="section-sub">Destinations waiting to be discovered.</p>
+    </div>
+    <div class="gems-grid" id="gems-grid"></div>
+  </section>
+
+  <!-- SEARCH SECTION -->
+  <section class="search-section" id="search-section">
+    <div class="search-content">
+      <div class="section-tag" style="color:rgba(255,255,255,0.6)">Find Your Next Adventure</div>
+      <h2 class="section-title" style="color:white">Search All Destinations</h2>
+      <p class="section-sub" style="color:rgba(255,255,255,0.5)">Filter by name, city, or category</p>
+      <div class="search-box">
+        <input type="text" id="main-search-input" placeholder="Place name, city, or state…" />
+        <select id="main-search-select">
+          <option value="">All Categories</option>
+          <option value="Heritage">Heritage</option>
+          <option value="Nature">Nature</option>
+          <option value="Religious">Religious</option>
+          <option value="Adventure">Adventure</option>
+        </select>
+        <button id="main-search-btn">Search</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH RESULTS -->
+  <section id="search-results">
+    <div class="section-header">
+      <h2 class="section-title" id="results-title">Search Results</h2>
+    </div>
+    <div class="results-grid" id="results-grid"></div>
+  </section>
+
+  <!-- ALL STATES A-Z -->
+  <section class="all-states-section" id="all-states-section">
+    <div class="section-header">
+      <div class="section-tag">Complete Directory</div>
+      <h2 class="section-title">All States & UTs</h2>
+      <p class="section-sub">Every corner of India — explore them all.</p>
+    </div>
+    <div class="states-az-grid" id="states-az-grid"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <span class="footer-brand">Travel<span>Bharat</span></span>
+        <p class="footer-desc">Dedicated to showcasing the unparalleled beauty and cultural depth of India.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-link">📘</a>
+          <a href="#" class="social-link">📸</a>
+          <a href="#" class="social-link">🐦</a>
+          <a href="#" class="social-link">▶️</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Explore</div>
+        <ul class="footer-links">
+          <li><a href="#">Popular States</a></li>
+          <li><a href="#">Heritage Sites</a></li>
+          <li><a href="#">Nature & Wildlife</a></li>
+          <li><a href="#">Adventure Sports</a></li>
+          <li><a href="#">Pilgrim Circuits</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Regions</div>
+        <ul class="footer-links">
+          <li><a href="#">North India</a></li>
+          <li><a href="#">South India</a></li>
+          <li><a href="#">East India</a></li>
+          <li><a href="#">West India</a></li>
+          <li><a href="#">Northeast India</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Contact</div>
+        <ul class="footer-links">
+          <li><a href="#">info@travelbharat.in</a></li>
+          <li><a href="#">+91 2346 6789</a></li>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 TravelBharat. All rights reserved. Made with ❤️ for Incredible India.</p>
+      <p>Powered by Unified Mentor</p>
+    </div>
+  </footer>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <div class="mobile-nav-items">
+      <a href="index.html"  class="mobile-nav-item active"><span class="mobile-nav-icon">🏠</span>Home</a>
+      <a href="#states-section" class="mobile-nav-item"><span class="mobile-nav-icon">🗺️</span>States</a>
+      <a href="#search-section" class="mobile-nav-item"><span class="mobile-nav-icon">🔍</span>Search</a>
+      <a href="map.html"    class="mobile-nav-item"><span class="mobile-nav-icon">📍</span>Map</a>
+      <button class="mobile-nav-item" onclick="openAdminModal()" style="background:none;border:none;cursor:pointer;">
+        <span class="mobile-nav-icon">🔐</span>Admin
+      </button>
+    </div>
+  </nav>
+
+  <!-- PLACE MODAL -->
+  <div class="modal-backdrop" id="place-modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-main-img-wrap" id="modal-img-wrap">
+        <img id="modal-img" src="" alt=""/>
+        <div class="modal-header-overlay"></div>
+        <button class="gallery-nav prev" id="gallery-prev" onclick="galleryNav(-1)">‹</button>
+        <button class="gallery-nav next" id="gallery-next" onclick="galleryNav(1)">›</button>
+        <span class="img-counter" id="img-counter">1 / 1</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header-content">
+          <div class="modal-title" id="modal-title"></div>
+          <div class="modal-city"  id="modal-city"></div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="gallery-strip" id="gallery-strip"></div>
+        <div class="modal-info-grid">
+          <div class="modal-info-item">
+            <div class="modal-info-label">Category</div>
+            <div class="modal-info-value" id="modal-category"></div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label">Best Time</div>
+            <div class="modal-info-value" id="modal-best-time"></div>
+          </div>
+          <div class="modal-info-item" style="grid-column:1/-1">
+            <div class="modal-info-label">Entry Fee</div>
+            <div class="modal-info-value" id="modal-entry"></div>
+          </div>
+        </div>
+        <p class="modal-desc" id="modal-desc"></p>
+        <div class="modal-section-title">Nearby Attractions</div>
+        <div class="nearby-list" id="modal-nearby"></div>
+        <div id="modal-map-link"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const ADMIN_API = (function () {
+      if (window.location.protocol === 'file:' || window.location.port === '5500' || window.location.port === '5173') {
+        return 'http://localhost:5000/api';
+      }
+      return '/api';
+    })();
+
+    function openAdminModal() {
+      document.getElementById('admin-modal-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('admin-email').value = '';
+      document.getElementById('admin-password').value = '';
+      document.getElementById('admin-login-error').style.display = 'none';
+      setTimeout(() => document.getElementById('admin-email').focus(), 200);
+    }
+
+    function closeAdminModal() {
+      document.getElementById('admin-modal-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAdminModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('admin-password').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') doAdminLogin();
+      });
+      document.getElementById('admin-email').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('admin-password').focus();
+      });
+    });
+
+    async function doAdminLogin() {
+      const email    = document.getElementById('admin-email').value.trim();
+      const password = document.getElementById('admin-password').value;
+      const btn      = document.getElementById('admin-login-btn');
+      const errEl    = document.getElementById('admin-login-error');
+      errEl.style.display = 'none';
+      if (!email || !password) {
+        errEl.textContent = 'Please enter your email and password.';
+        errEl.style.display = 'block';
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+      try {
+        const res  = await fetch(`${ADMIN_API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Invalid credentials.');
+        localStorage.setItem('tb_admin_token', data.token);
+        window.location.href = 'admin.html';
+      } catch (err) {
+        errEl.textContent = err.message || 'Login failed.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign In to Dashboard';
+      }
+    }
+  </script>
+</body>
+</html>

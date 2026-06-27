@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>404 — Page Not Found | TravelBharat</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--light-bg);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .error-wrap {
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 560px;
+    }
+
+    .error-emoji {
+      font-size: 5rem;
+      margin-bottom: 1.5rem;
+      display: block;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+
+    .error-code {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(5rem, 15vw, 9rem);
+      font-weight: 900;
+      color: var(--saffron);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      letter-spacing: -4px;
+    }
+
+    .error-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+
+    .error-desc {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-home {
+      background: var(--saffron);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      display: inline-block;
+    }
+
+    .btn-home:hover {
+      background: #E85A00;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,107,26,0.35);
+    }
+
+    .btn-back {
+      background: transparent;
+      color: var(--saffron);
+      border: 2px solid var(--saffron);
+      padding: 11px 28px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      display: inline-block;
+    }
+
+    .btn-back:hover {
+      background: var(--saffron);
+      color: white;
+    }
+
+    .popular-links {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .popular-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .popular-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .popular-tag {
+      padding: 6px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      font-size: 0.82rem;
+      color: var(--mid);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .popular-tag:hover {
+      border-color: var(--saffron);
+      color: var(--saffron);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="error-wrap">
+    <span class="error-emoji">🗺️</span>
+    <div class="error-code">404</div>
+    <div class="error-title">Destination Not Found</div>
+    <p class="error-desc">
+      Looks like this place isn't on our map yet.<br/>
+      Let's get you back to exploring Incredible India.
+    </p>
+
+    <div class="error-actions">
+      <a href="index.html" class="btn-home">🏠 Back to Home</a>
+      <a href="javascript:history.back()" class="btn-back">← Go Back</a>
+    </div>
+
+    <div class="popular-links">
+      <div class="popular-title">Popular Destinations</div>
+      <div class="popular-grid">
+        <a href="state.html?state=rajasthan"        class="popular-tag">🏰 Rajasthan</a>
+        <a href="state.html?state=kerala"           class="popular-tag">🌴 Kerala</a>
+        <a href="state.html?state=uttarakhand"      class="popular-tag">🏔️ Uttarakhand</a>
+        <a href="state.html?state=goa"              class="popular-tag">🏖️ Goa</a>
+        <a href="state.html?state=ladakh"           class="popular-tag">🏔️ Ladakh</a>
+        <a href="state.html?state=uttar_pradesh"    class="popular-tag">🕌 Uttar Pradesh</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

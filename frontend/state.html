@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- ══ PRIMARY META (base values — overwritten by JS after API loads) ══ -->
+  <title>Explore India — TravelBharat</title>
+  <meta name="description"    content="Discover top tourist destinations, heritage sites, and natural wonders across India's states with TravelBharat." />
+  <meta name="keywords"       content="India tourism, tourist places, travel India, TravelBharat" />
+  <meta name="author"         content="TravelBharat" />
+  <meta name="robots"         content="index, follow" />
+  <link rel="canonical"       id="seo-canonical" href="https://www.travelbharat.in/state.html" />
+
+  <!-- ══ OPEN GRAPH (updated dynamically) ═════════════════════════════════ -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="TravelBharat" />
+  <meta property="og:url"         id="seo-og-url"         content="https://www.travelbharat.in/state.html" />
+  <meta property="og:title"       id="seo-og-title"       content="Explore India — TravelBharat" />
+  <meta property="og:description" id="seo-og-desc"        content="Discover top tourist destinations across India's states." />
+  <meta property="og:image"       id="seo-og-image"       content="https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&q=80" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale"       content="en_IN" />
+
+  <!-- ══ TWITTER CARD (updated dynamically) ══════════════════════════════ -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="@TravelBharat" />
+  <meta name="twitter:title"       id="seo-tw-title" content="Explore India — TravelBharat" />
+  <meta name="twitter:description" id="seo-tw-desc"  content="Discover top tourist destinations across India's states." />
+  <meta name="twitter:image"       id="seo-tw-image" content="https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&q=80" />
+
+  <!-- ══ JSON-LD placeholder — filled by JS ══════════════════════════════ -->
+  <script type="application/ld+json" id="seo-jsonld">{}</script>
+
+  <!-- ══ FAVICON ══════════════════════════════════════════════════════════ -->
+  <link rel="icon"             href="/favicon.ico" />
+  <link rel="icon"             type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180"  href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#FF6B1A" />
+
+  <!-- ══ FONTS & STYLES ═══════════════════════════════════════════════════ -->
+  <link rel="stylesheet" href="style.css"/>
+   <link rel="stylesheet" href="reviews.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* Mobile Menu */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: #FFFBF5;
+      border-bottom: 1px solid #EDE0D0;
+      z-index: 999;
+      padding: 16px 5%;
+      box-shadow: 0 8px 24px rgba(26,18,8,0.1);
+    }
+    .mobile-menu.open { display: block; }
+    .mobile-menu ul { list-style: none; }
+    .mobile-menu ul li { border-bottom: 1px solid #EDE0D0; }
+    .mobile-menu ul li:last-child { border-bottom: none; }
+    .mobile-menu ul li a { display: block; padding: 14px 8px; text-decoration: none; color: #3D2B1A; font-weight: 500; font-size: 0.95rem; transition: color 0.2s; }
+    .mobile-menu ul li a:hover { color: #FF6B1A; }
+
+    /* Image gallery in modal */
+    .gallery-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: thin; scrollbar-color: #FF6B1A #EDE0D0; }
+    .gallery-strip::-webkit-scrollbar { height: 4px; }
+    .gallery-strip::-webkit-scrollbar-thumb { background: #FF6B1A; border-radius: 2px; }
+    .gallery-thumb { flex-shrink: 0; width: 80px; height: 60px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .gallery-thumb.active { border-color: #FF6B1A; }
+    .gallery-thumb:hover { border-color: #FF6B1A88; transform: translateY(-2px); }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-main-img-wrap { position: relative; height: 280px; overflow: hidden; border-radius: 16px 16px 0 0; }
+    .modal-main-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease; }
+    .btn-maps { display: inline-flex; align-items: center; gap: 8px; background: #4285F4; color: white; border-radius: 50px; padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.875rem; text-decoration: none; transition: all 0.2s; margin-top: 4px; }
+    .btn-maps:hover { background: #2A75F3; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(66,133,244,0.35); }
+    .img-counter { position: absolute; bottom: 10px; right: 10px; background: rgba(26,18,8,0.7); color: white; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 50px; backdrop-filter: blur(4px); }
+    .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.85); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 2; }
+    .gallery-nav:hover { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .gallery-nav.prev { left: 10px; }
+    .gallery-nav.next { right: 10px; }
+    .gallery-nav:disabled { opacity: 0.3; cursor: default; }
+  </style>
+</head>
+<body id="state-page">
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="navbar-brand">Travel<span>Bharat</span></a>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#all-states-section">All States</a></li>
+      <li><a href="index.html#categories-section">Categories</a></li>
+      <li><a href="map.html">🗺️ Map</a></li>
+    </ul>
+    <div class="navbar-actions">
+      <a href="index.html" class="btn-outline">← Back to Home</a>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <ul>
+      <li><a href="index.html"                        onclick="document.getElementById('mobile-menu').classList.remove('open')">🏠 Home</a></li>
+      <li><a href="index.html#all-states-section"     onclick="document.getElementById('mobile-menu').classList.remove('open')">🗺️ All States</a></li>
+      <li><a href="index.html#categories-section"     onclick="document.getElementById('mobile-menu').classList.remove('open')">🏛️ Categories</a></li>
+      <li><a href="map.html"                          onclick="document.getElementById('mobile-menu').classList.remove('open')">📍 Map Explorer</a></li>
+    </ul>
+  </div>
+
+  <!-- STATE HERO -->
+  <section class="state-hero">
+    <div class="state-hero-bg">
+      <img id="state-hero-bg-img" src="" alt="State Hero"/>
+    </div>
+    <div class="state-hero-overlay"></div>
+    <div class="state-hero-content">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>›</span>
+        <span class="current" id="state-hero-title">State</span>
+      </div>
+      <h1 class="state-hero-title" id="state-hero-title-main"></h1>
+      <p class="state-hero-tagline" id="state-hero-tagline"></p>
+      <div class="state-hero-meta" id="state-hero-meta"></div>
+      <div class="state-hero-actions">
+        <a href="index.html" class="btn-primary">← All States</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK FACTS -->
+  <div class="quick-facts">
+    <div class="facts-grid" id="facts-grid"></div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="about-section">
+    <div class="about-grid">
+      <div class="about-text"   id="about-text"></div>
+      <div class="about-images" id="about-images"></div>
+    </div>
+  </section>
+
+  <!-- PLACES -->
+  <section class="places-section">
+    <div class="section-header">
+      <span class="section-tag">Top Attractions</span>
+      <h2 class="section-title" id="places-section-title">Explore</h2>
+    </div>
+    <div class="places-filter" id="places-filter"></div>
+    <div class="places-grid"   id="places-grid"></div>
+  </section>
+
+  <!-- PLACE MODAL -->
+  <div class="modal-backdrop" id="place-modal" onclick="handleModalClick(event)">
+    <div class="modal">
+      <div class="modal-main-img-wrap" id="modal-img-wrap">
+        <img id="modal-img" src="" alt=""/>
+        <div class="modal-header-overlay"></div>
+        <button class="gallery-nav prev" id="gallery-prev" onclick="galleryNav(-1)">‹</button>
+        <button class="gallery-nav next" id="gallery-next" onclick="galleryNav(1)">›</button>
+        <span class="img-counter" id="img-counter">1 / 1</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header-content">
+          <h2 class="modal-title" id="modal-title"></h2>
+          <p  class="modal-city"  id="modal-city"></p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="gallery-strip" id="gallery-strip"></div>
+        <div class="modal-info-grid">
+          <div class="modal-info-item">
+            <div class="modal-info-label">Category</div>
+            <div class="modal-info-value" id="modal-category"></div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label">Best Time</div>
+            <div class="modal-info-value" id="modal-best-time"></div>
+          </div>
+          <div class="modal-info-item" style="grid-column:1/-1">
+            <div class="modal-info-label">Entry Fee</div>
+            <div class="modal-info-value" id="modal-entry"></div>
+          </div>
+        </div>
+        <p class="modal-desc" id="modal-desc"></p>
+        <div class="modal-section-title">Nearby Attractions</div>
+        <div class="nearby-list" id="modal-nearby"></div>
+        <div id="modal-map-link"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-bottom" style="border-top:none;padding-top:0">
+      <p>© 2025 TravelBharat. All rights reserved.</p>
+      <p>Made with ❤️ for Incredible India</p>
+    </div>
+  </footer>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <div class="mobile-nav-items">
+      <a href="index.html"  class="mobile-nav-item"><span class="mobile-nav-icon">🏠</span>Home</a>
+      <a href="index.html#all-states-section" class="mobile-nav-item"><span class="mobile-nav-icon">🗺️</span>States</a>
+      <a href="index.html#search-section"     class="mobile-nav-item"><span class="mobile-nav-icon">🔍</span>Search</a>
+      <a href="map.html"    class="mobile-nav-item"><span class="mobile-nav-icon">📍</span>Map</a>
+    </div>
+  </nav>
+
+  <script src="app.js"></script>
+   <script src="reviews.js"></script>
+  <script>
+    // ── Hamburger ──────────────────────────────────────────────
+    document.getElementById('hamburger').addEventListener('click', function () {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+
+    // ── Dynamic SEO updater ────────────────────────────────────
+    // Called from app.js after the state data is fetched.
+    // Signature: updateStateSEO(state)
+    window.updateStateSEO = function (state) {
+      if (!state) return;
+
+      const BASE_URL   = 'https://www.travelbharat.in';
+      const pageUrl    = `${BASE_URL}/state.html?state=${state.id}`;
+      const heroImage  = state.heroImage || state.image || '';
+      const title      = `${state.name} Tourism — ${state.tagline} | TravelBharat`;
+      const desc       = `${state.about.slice(0, 155)}…`;
+      const keywords   = [
+        state.name, state.capital, state.region,
+        ...(state.places || []).slice(0, 5).map(p => p.name),
+        'India tourism', 'TravelBharat'
+      ].join(', ');
+
+      // <title>
+      document.title = title;
+
+      // Primary meta
+      _setMeta('name',     'description', desc);
+      _setMeta('name',     'keywords',    keywords);
+      _setAttr('#seo-canonical', 'href', pageUrl);
+
+      // Open Graph
+      _setAttr('#seo-og-url',   'content', pageUrl);
+      _setAttr('#seo-og-title', 'content', title);
+      _setAttr('#seo-og-desc',  'content', desc);
+      _setAttr('#seo-og-image', 'content', heroImage);
+
+      // Twitter
+      _setAttr('#seo-tw-title', 'content', title);
+      _setAttr('#seo-tw-desc',  'content', desc);
+      _setAttr('#seo-tw-image', 'content', heroImage);
+
+      // JSON-LD — TouristDestination structured data
+      const jsonld = {
+        "@context": "https://schema.org",
+        "@type": "TouristDestination",
+        "name": state.name,
+        "description": state.about,
+        "url": pageUrl,
+        "image": heroImage,
+        "touristType": state.category,
+        "containsPlace": (state.places || []).map(p => ({
+          "@type": "TouristAttraction",
+          "name": p.name,
+          "description": p.desc,
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": p.city,
+            "addressRegion": state.name,
+            "addressCountry": "IN"
+          }
+        }))
+      };
+      document.getElementById('seo-jsonld').textContent = JSON.stringify(jsonld, null, 2);
+    };
+
+    // ── Helpers ────────────────────────────────────────────────
+    function _setMeta(attrName, attrVal, content) {
+      let el = document.querySelector(`meta[${attrName}="${attrVal}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attrName, attrVal);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    }
+
+    function _setAttr(selector, attr, value) {
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute(attr, value);
+    }
+
+    // ── Gallery State ──────────────────────────────────────────
+    let _galleryImages = [];
+    let _galleryIdx    = 0;
+
+    function setGalleryImage(idx) {
+      if (!_galleryImages.length) return;
+      _galleryIdx = Math.max(0, Math.min(idx, _galleryImages.length - 1));
+
+      const img = document.getElementById('modal-img');
+      img.style.opacity = '0';
+      setTimeout(() => { img.src = _galleryImages[_galleryIdx]; img.style.opacity = '1'; }, 150);
+
+      document.getElementById('img-counter').textContent = `${_galleryIdx + 1} / ${_galleryImages.length}`;
+      document.querySelectorAll('.gallery-thumb').forEach((t, i) => t.classList.toggle('active', i === _galleryIdx));
+      document.getElementById('gallery-prev').disabled = _galleryIdx === 0;
+      document.getElementById('gallery-next').disabled = _galleryIdx === _galleryImages.length - 1;
+    }
+
+    function galleryNav(dir) { setGalleryImage(_galleryIdx + dir); }
+
+    // Override openModal from app.js to add gallery + map link support
+    window.openModal = function(place, stateName) {
+      const p = typeof place === 'string' ? JSON.parse(place) : place;
+
+      _galleryImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+      _galleryIdx    = 0;
+
+      const mainImg = document.getElementById('modal-img');
+      mainImg.src            = _galleryImages[0] || '';
+      mainImg.style.opacity  = '1';
+
+      document.getElementById('img-counter').textContent = `1 / ${_galleryImages.length}`;
+
+      const strip = document.getElementById('gallery-strip');
+      if (_galleryImages.length > 1) {
+        strip.innerHTML = _galleryImages.map((src, i) => `
+          <div class="gallery-thumb${i === 0 ? ' active' : ''}" onclick="setGalleryImage(${i})">
+            <img src="${src}" alt="Photo ${i+1}" loading="lazy"/>
+          </div>`).join('');
+        strip.style.display = 'flex';
+      } else {
+        strip.innerHTML     = '';
+        strip.style.display = 'none';
+      }
+
+      document.getElementById('gallery-prev').disabled = true;
+      document.getElementById('gallery-next').disabled = _galleryImages.length <= 1;
+
+      document.getElementById('modal-title').textContent    = p.name;
+      document.getElementById('modal-city').textContent     = `${p.city}, ${stateName}`;
+      document.getElementById('modal-category').textContent = p.category;
+      document.getElementById('modal-best-time').textContent= p.bestTime;
+      document.getElementById('modal-entry').textContent    = p.entryFee || 'Check locally';
+      document.getElementById('modal-desc').textContent     = p.desc;
+
+      document.getElementById('modal-nearby').innerHTML =
+        (p.nearby || []).map(n => `<span class="nearby-tag">📍 ${n}</span>`).join('');
+
+      document.getElementById('modal-map-link').innerHTML = p.mapLink
+        ? `<a href="${p.mapLink}" target="_blank" rel="noopener noreferrer" class="btn-maps">🗺️ View on Google Maps</a>`
+        : '';
+
+      document.getElementById('place-modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    // Keyboard gallery navigation
+    document.addEventListener('keydown', function(e) {
+      if (!document.getElementById('place-modal').classList.contains('open')) return;
+      if (e.key === 'ArrowLeft')  galleryNav(-1);
+      if (e.key === 'ArrowRight') galleryNav(1);
+      if (e.key === 'Escape')     closeModal();
+    });
+  </script>
+   
+</body>
+</html>

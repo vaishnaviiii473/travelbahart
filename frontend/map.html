@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Map Explorer — TravelBharat</title>
+  <meta name="description" content="Explore India's states and top destinations on an interactive map. Plan your trip with TravelBharat's Map Explorer."/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #FFFBF5;
+      --surface:   #FFFFFF;
+      --border:    #EDE0D0;
+      --text:      #1A1208;
+      --muted:     #7A6655;
+      --accent:    #FF6B1A;
+      --accent2:   #E85D10;
+      --nav-h:     64px;
+      --panel-w:   360px;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(26,18,8,0.10);
+      --shadow-lg: 0 12px 48px rgba(26,18,8,0.16);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: var(--nav-h);
+      background: rgba(255,251,245,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 5%; gap: 20px;
+    }
+    .navbar-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 900;
+      text-decoration: none; color: var(--text);
+    }
+    .navbar-brand span { color: var(--accent); }
+    .navbar-links {
+      display: flex; list-style: none; gap: 24px; margin-left: auto;
+    }
+    .navbar-links a {
+      text-decoration: none; color: var(--muted);
+      font-size: 0.875rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .navbar-links a:hover, .navbar-links a.active { color: var(--accent); }
+    .btn-back {
+      background: var(--accent); color: white;
+      border: none; border-radius: 50px;
+      padding: 8px 18px; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-back:hover { background: var(--accent2); transform: translateY(-1px); }
+
+    /* ── Layout ── */
+    .map-layout {
+      display: flex;
+      height: 100vh;
+      padding-top: var(--nav-h);
+    }
+
+    /* ── Side Panel ── */
+    .side-panel {
+      width: var(--panel-w);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      z-index: 10;
+    }
+    .panel-header { padding: 20px 20px 0; flex-shrink: 0; }
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .panel-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; }
+
+    .search-wrap { position: relative; margin-bottom: 12px; }
+    .search-input {
+      width: 100%; padding: 10px 14px 10px 38px;
+      border: 1.5px solid var(--border); border-radius: 50px;
+      background: var(--bg); font-family: inherit;
+      font-size: 0.85rem; color: var(--text);
+      outline: none; transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-icon {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%); font-size: 0.9rem; pointer-events: none;
+    }
+
+    .cat-pills { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 14px; }
+    .cat-pill {
+      border: 1.5px solid var(--border); border-radius: 50px;
+      padding: 4px 12px; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; background: transparent; color: var(--muted);
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .cat-pill:hover  { border-color: var(--accent); color: var(--accent); }
+    .cat-pill.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+    .state-list {
+      flex: 1; overflow-y: auto; padding: 0 12px 16px;
+      scrollbar-width: thin; scrollbar-color: var(--accent) var(--border);
+    }
+    .state-list::-webkit-scrollbar { width: 4px; }
+    .state-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+    .state-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 8px; border-radius: 10px;
+      cursor: pointer; transition: background 0.15s;
+      border-bottom: 1px solid var(--border);
+    }
+    .state-item:last-child { border-bottom: none; }
+    .state-item:hover    { background: var(--bg); }
+    .state-item.selected { background: #FFF0E6; border-color: #FFD4B3; }
+
+    .state-emoji { font-size: 1.3rem; flex-shrink: 0; }
+    .state-info  { flex: 1; min-width: 0; }
+    .state-name  { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .state-meta  { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+    .state-count {
+      font-size: 0.7rem; font-weight: 700;
+      background: var(--accent); color: white;
+      border-radius: 50px; padding: 2px 8px; flex-shrink: 0;
+    }
+
+    /* ── Spinner ── */
+    .spinner-wrap {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      color: var(--muted); font-size: 0.85rem;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .api-warn {
+      background: #FFF3CD; border: 1px solid #FFD877;
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 0.75rem; color: #856404;
+      margin: 0 20px 10px; display: none;
+    }
+    .api-warn.show { display: block; }
+
+    /* ── Map Area ── */
+    .map-area {
+      flex: 1; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    }
+    #india-map-svg { width: 100%; height: 100%; display: block; }
+
+    .state-path {
+      fill: #C7DDB5;
+      stroke: #FFFFFF;
+      stroke-width: 1.2;
+      cursor: pointer;
+      transition: fill 0.2s;
+    }
+    .state-path.heritage  { fill: #C9B99A; }
+    .state-path.nature    { fill: #A8D5A2; }
+    .state-path.adventure { fill: #F9C784; }
+    .state-path.religious { fill: #D4A5C9; }
+    .state-path:hover, .state-path.active { fill: var(--accent) !important; }
+
+    .map-marker { cursor: pointer; transition: transform 0.2s; transform-origin: center bottom; }
+    .map-marker:hover { transform: scale(1.3); }
+
+    /* ── Tooltip — FIXED ── */
+    .map-tooltip {
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      box-shadow: var(--shadow-lg);
+      pointer-events: none;          /* hidden state: not clickable */
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s, transform 0.18s;
+      min-width: 180px; max-width: 240px;
+      z-index: 100;
+    }
+    /* when visible: allow clicks so Explore button works */
+    .map-tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;          /* ← KEY FIX */
+    }
+    .tt-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+    .tt-meta { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+    .tt-btn {
+      display: inline-block; margin-top: 8px;
+      background: var(--accent); color: white;
+      border-radius: 50px; padding: 5px 14px;
+      font-size: 0.72rem; font-weight: 700;
+      text-decoration: none;
+    }
+    .tt-btn:hover { background: var(--accent2); }
+
+    /* ── Detail Panel ── */
+    .detail-panel {
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: 320px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto; z-index: 50;
+      scrollbar-width: thin; scrollbar-color: var(--accent) var(--border);
+    }
+    .detail-panel.open { transform: translateX(0); }
+    .detail-close {
+      position: absolute; top: 12px; right: 12px;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: var(--bg);
+      cursor: pointer; font-size: 1rem; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .detail-close:hover { background: var(--border); }
+    .detail-hero { width: 100%; height: 180px; object-fit: cover; }
+    .detail-body { padding: 16px; }
+    .detail-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .detail-tagline { font-size: 0.8rem; color: var(--muted); margin-bottom: 12px; line-height: 1.4; }
+    .detail-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .detail-chip {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 50px; padding: 3px 10px;
+      font-size: 0.72rem; font-weight: 600; color: var(--muted);
+    }
+    .detail-section { margin-bottom: 14px; }
+    .detail-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--accent); margin-bottom: 8px;
+    }
+    .places-mini { display: flex; flex-direction: column; gap: 6px; }
+    .place-mini {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px; background: var(--bg); border-radius: 8px;
+      cursor: pointer; transition: background 0.15s; text-decoration: none; color: var(--text);
+    }
+    .place-mini:hover { background: #FFE8D6; }
+    .place-mini-img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+    .place-mini-name { font-weight: 600; font-size: 0.82rem; }
+    .place-mini-city { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+    .btn-explore {
+      display: block; text-align: center;
+      background: var(--accent); color: white;
+      border-radius: 50px; padding: 10px;
+      font-weight: 700; font-size: 0.875rem;
+      text-decoration: none; margin-top: 16px;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-explore:hover { background: var(--accent2); transform: translateY(-1px); }
+
+    /* ── Legend ── */
+    .map-legend {
+      position: absolute; bottom: 20px; left: 20px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 12px 16px; font-size: 0.72rem;
+      box-shadow: var(--shadow);
+    }
+    .legend-title { font-weight: 700; color: var(--text); margin-bottom: 7px; font-size: 0.75rem; }
+    .legend-item { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: var(--muted); }
+    .legend-dot   { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      position: absolute; top: 16px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: 50px;
+      padding: 8px 20px; font-size: 0.78rem;
+      box-shadow: var(--shadow);
+      display: flex; align-items: center; gap: 16px;
+      white-space: nowrap;
+    }
+    .stats-num { font-weight: 700; color: var(--accent); }
+    .stats-sep { color: var(--border); }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .side-panel { width: 100%; height: 45vh; border-right: none; border-bottom: 1px solid var(--border); }
+      .map-layout  { flex-direction: column; }
+      .map-area    { flex: 1; }
+      .navbar-links { display: none; }
+      .stats-bar   { display: none; }
+      .detail-panel { width: 100%; top: auto; height: 70vh; transform: translateY(100%); }
+      .detail-panel.open { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">Travel<span>Bharat</span></a>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#all-states-section">All States</a></li>
+      <li><a href="map.html" class="active">🗺️ Map</a></li>
+    </ul>
+    <a href="index.html" class="btn-back" style="margin-left:auto">← Back to Home</a>
+  </nav>
+
+  <div class="map-layout">
+
+    <aside class="side-panel">
+      <div class="panel-header">
+        <div class="panel-title">🗺️ Map Explorer</div>
+        <div class="panel-sub" id="panel-sub">Loading states…</div>
+        <div class="api-warn" id="api-warn">⚠️ API unreachable — showing offline data</div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="state-search" type="text" placeholder="Search states…" autocomplete="off"/>
+        </div>
+        <div class="cat-pills" id="cat-pills">
+          <button class="cat-pill active" data-cat="All">All</button>
+          <button class="cat-pill" data-cat="Heritage">🏛️ Heritage</button>
+          <button class="cat-pill" data-cat="Nature">🌿 Nature</button>
+          <button class="cat-pill" data-cat="Adventure">🧗 Adventure</button>
+          <button class="cat-pill" data-cat="Religious">🕌 Religious</button>
+        </div>
+      </div>
+      <div class="spinner-wrap" id="list-loader">
+        <div class="spinner"></div>
+        <span>Fetching states from API…</span>
+      </div>
+      <div class="state-list" id="state-list" style="display:none"></div>
+    </aside>
+
+    <main class="map-area" id="map-area">
+
+      <div class="stats-bar" id="stats-bar" style="display:none">
+        <span><span class="stats-num" id="stat-states">—</span> States</span>
+        <span class="stats-sep">|</span>
+        <span><span class="stats-num" id="stat-places">—</span> Destinations</span>
+        <span class="stats-sep">|</span>
+        <span>Click a state to explore</span>
+      </div>
+
+      <svg id="india-map-svg" viewBox="0 0 900 980" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="shadow-drop">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+          </filter>
+        </defs>
+        <rect width="900" height="980" fill="#DBEAFE"/>
+
+        <path id="path-jammu_kashmir"     class="state-path nature"    d="M290 40 L360 30 L420 55 L440 90 L410 120 L380 130 L330 115 L295 90 Z"/>
+        <path id="path-ladakh"            class="state-path adventure" d="M360 30 L460 20 L510 50 L490 90 L440 90 L420 55 Z"/>
+        <path id="path-himachal_pradesh"  class="state-path nature"    d="M295 90 L380 130 L390 160 L350 170 L305 155 L280 130 Z"/>
+        <path id="path-punjab"            class="state-path heritage"  d="M240 110 L295 90 L305 155 L280 165 L240 155 Z"/>
+        <path id="path-haryana"           class="state-path heritage"  d="M240 155 L280 165 L285 200 L255 215 L225 200 L225 170 Z"/>
+        <path id="path-delhi"             class="state-path heritage"  d="M260 195 L275 192 L278 208 L262 210 Z"/>
+        <path id="path-uttarakhand"       class="state-path adventure" d="M305 155 L350 170 L370 195 L340 220 L300 210 L285 200 L280 165 Z"/>
+        <path id="path-uttar_pradesh"     class="state-path heritage"  d="M255 215 L285 200 L300 210 L340 220 L380 250 L390 290 L360 310 L310 300 L270 280 L245 255 Z"/>
+        <path id="path-rajasthan"         class="state-path heritage"  d="M150 175 L240 155 L225 200 L255 215 L245 255 L220 280 L170 285 L130 250 L120 210 L140 190 Z"/>
+        <path id="path-gujarat"           class="state-path heritage"  d="M100 280 L130 250 L170 285 L165 320 L175 355 L150 375 L110 360 L85 330 L90 300 Z"/>
+        <path id="path-madhya_pradesh"    class="state-path nature"    d="M220 280 L245 255 L270 280 L310 300 L360 310 L370 340 L340 370 L290 375 L245 360 L210 330 L205 300 Z"/>
+        <path id="path-maharashtra"       class="state-path heritage"  d="M165 355 L175 355 L150 375 L180 395 L205 420 L195 460 L165 475 L140 460 L120 430 L130 400 L150 380 Z"/>
+        <path id="path-bihar"             class="state-path heritage"  d="M390 290 L430 280 L460 295 L455 325 L420 335 L380 325 L360 310 Z"/>
+        <path id="path-jharkhand"         class="state-path nature"    d="M360 310 L380 325 L420 335 L430 365 L400 385 L365 375 L340 355 L340 330 Z"/>
+        <path id="path-west_bengal"       class="state-path heritage"  d="M460 295 L500 285 L515 310 L505 355 L475 370 L450 355 L430 335 L455 325 Z"/>
+        <path id="path-odisha"            class="state-path heritage"  d="M400 385 L430 365 L450 355 L475 370 L470 405 L445 425 L415 420 L390 405 Z"/>
+        <path id="path-chhattisgarh"      class="state-path nature"    d="M340 355 L365 375 L400 385 L390 405 L375 435 L345 440 L315 415 L320 385 Z"/>
+        <path id="path-andhra_pradesh"    class="state-path religious" d="M315 415 L345 440 L375 435 L390 405 L415 420 L420 455 L400 480 L370 495 L340 485 L310 465 L305 440 Z"/>
+        <path id="path-telangana"         class="state-path heritage"  d="M280 400 L315 415 L305 440 L310 465 L280 470 L255 450 L260 420 Z"/>
+        <path id="path-karnataka"         class="state-path heritage"  d="M195 460 L220 445 L255 450 L280 470 L280 510 L255 540 L220 545 L190 525 L175 495 L180 465 Z"/>
+        <path id="path-goa"               class="state-path adventure" d="M175 495 L190 490 L195 510 L178 515 Z"/>
+        <path id="path-kerala"            class="state-path nature"    d="M220 545 L255 540 L260 575 L245 610 L220 630 L200 615 L195 585 L205 555 Z"/>
+        <path id="path-tamil_nadu"        class="state-path heritage"  d="M255 540 L280 510 L295 540 L295 575 L275 605 L245 610 L260 575 Z"/>
+        <path id="path-puducherry"        class="state-path heritage"  d="M285 560 L293 558 L294 568 L284 570 Z"/>
+        <path id="path-assam"             class="state-path nature"    d="M545 280 L590 270 L615 285 L610 305 L575 315 L545 305 Z"/>
+        <path id="path-meghalaya"         class="state-path nature"    d="M545 305 L575 315 L575 330 L545 335 L520 325 L525 310 Z"/>
+        <path id="path-arunachal_pradesh" class="state-path adventure" d="M545 250 L600 240 L645 255 L640 275 L615 285 L590 270 L545 280 Z"/>
+        <path id="path-nagaland"          class="state-path heritage"  d="M615 285 L640 275 L645 295 L625 305 L610 305 Z"/>
+        <path id="path-manipur"           class="state-path nature"    d="M610 305 L625 305 L628 325 L610 330 L600 320 Z"/>
+        <path id="path-mizoram"           class="state-path nature"    d="M580 330 L600 320 L610 330 L605 350 L580 345 Z"/>
+        <path id="path-tripura"           class="state-path heritage"  d="M555 330 L575 330 L575 315 L580 330 L580 345 L560 348 Z"/>
+        <path id="path-sikkim"            class="state-path nature"    d="M520 265 L535 260 L540 275 L528 280 Z"/>
+        <path id="path-andaman"           class="state-path adventure" d="M660 455 L667 450 L672 465 L668 480 L660 490 L654 478 L657 462 Z"/>
+        <path id="path-lakshadweep"       class="state-path nature"    d="M108 555 L114 550 L116 562 L110 565 Z"/>
+        <path id="path-chandigarh"        class="state-path heritage"  d="M258 150 L265 148 L267 157 L260 159 Z"/>
+
+        <!-- Labels -->
+        <text x="355" y="75"  font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">J&amp;K</text>
+        <text x="430" y="58"  font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">Ladakh</text>
+        <text x="330" y="155" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">H.P.</text>
+        <text x="260" y="135" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">Pb</text>
+        <text x="250" y="185" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">HR</text>
+        <text x="315" y="192" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">UK</text>
+        <text x="185" y="225" font-family="DM Sans,sans-serif" font-size="9.5" fill="#5A4030" text-anchor="middle" pointer-events="none">Rajasthan</text>
+        <text x="310" y="260" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">U.P.</text>
+        <text x="415" y="305" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">Bihar</text>
+        <text x="390" y="345" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">JH</text>
+        <text x="475" y="325" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">WB</text>
+        <text x="140" y="315" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">Gujarat</text>
+        <text x="285" y="330" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">M.P.</text>
+        <text x="167" y="435" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">MH</text>
+        <text x="430" y="398" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">Odisha</text>
+        <text x="355" y="412" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">CG</text>
+        <text x="275" y="438" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">TG</text>
+        <text x="365" y="455" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">A.P.</text>
+        <text x="232" y="498" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">Karnataka</text>
+        <text x="230" y="588" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">Kerala</text>
+        <text x="272" y="575" font-family="DM Sans,sans-serif" font-size="9"   fill="#5A4030" text-anchor="middle" pointer-events="none">TN</text>
+        <text x="575" y="295" font-family="DM Sans,sans-serif" font-size="8.5" fill="#5A4030" text-anchor="middle" pointer-events="none">Assam</text>
+        <text x="548" y="320" font-family="DM Sans,sans-serif" font-size="7"   fill="#5A4030" text-anchor="middle" pointer-events="none">Meg.</text>
+        <text x="593" y="260" font-family="DM Sans,sans-serif" font-size="8"   fill="#5A4030" text-anchor="middle" pointer-events="none">AR</text>
+        <text x="627" y="297" font-family="DM Sans,sans-serif" font-size="7"   fill="#5A4030" text-anchor="middle" pointer-events="none">NL</text>
+        <text x="613" y="318" font-family="DM Sans,sans-serif" font-size="7"   fill="#5A4030" text-anchor="middle" pointer-events="none">Mn</text>
+        <text x="593" y="338" font-family="DM Sans,sans-serif" font-size="7"   fill="#5A4030" text-anchor="middle" pointer-events="none">Mz</text>
+        <text x="563" y="338" font-family="DM Sans,sans-serif" font-size="7"   fill="#5A4030" text-anchor="middle" pointer-events="none">Tr</text>
+        <text x="528" y="272" font-family="DM Sans,sans-serif" font-size="7"   fill="#5A4030" text-anchor="middle" pointer-events="none">Sk</text>
+
+        <g id="markers-layer"></g>
+      </svg>
+
+      <!-- Tooltip -->
+      <div class="map-tooltip" id="map-tooltip">
+        <div class="tt-name" id="tt-name"></div>
+        <div class="tt-meta" id="tt-meta"></div>
+        <a class="tt-btn" id="tt-btn" href="#">Explore →</a>
+      </div>
+
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="legend-title">Category</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#C9B99A"></span>Heritage</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#A8D5A2"></span>Nature</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#F9C784"></span>Adventure</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#D4A5C9"></span>Religious</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Selected</div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div class="detail-panel" id="detail-panel">
+        <button class="detail-close" id="detail-close">✕</button>
+        <img class="detail-hero" id="dp-img" src="" alt=""/>
+        <div class="detail-body">
+          <div class="detail-title"   id="dp-title"></div>
+          <div class="detail-tagline" id="dp-tagline"></div>
+          <div class="detail-chips"   id="dp-chips"></div>
+          <div class="detail-section">
+            <div class="detail-section-title">Top Places</div>
+            <div class="places-mini" id="dp-places"></div>
+          </div>
+          <a class="btn-explore" id="dp-explore" href="#">Explore Full State →</a>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+  const API_BASE = (() => {
+    const { protocol, port } = window.location;
+    if (protocol === 'file:' || port === '5500' || port === '5173') return 'http://localhost:5000/api';
+    return '/api';
+  })();
+
+  const STATE_COORDS = {
+    rajasthan:        { lat: 27.39, lng: 73.43 },
+    kerala:           { lat: 10.85, lng: 76.27 },
+    uttarakhand:      { lat: 30.07, lng: 79.01 },
+    meghalaya:        { lat: 25.47, lng: 91.37 },
+    goa:              { lat: 15.30, lng: 74.12 },
+    himachal_pradesh: { lat: 31.10, lng: 77.17 },
+    tamil_nadu:       { lat: 11.13, lng: 78.66 },
+    uttar_pradesh:    { lat: 26.85, lng: 80.91 },
+    karnataka:        { lat: 15.32, lng: 75.71 },
+    west_bengal:      { lat: 22.99, lng: 87.85 },
+    gujarat:          { lat: 22.26, lng: 71.20 },
+    maharashtra:      { lat: 19.75, lng: 75.71 },
+    madhya_pradesh:   { lat: 22.97, lng: 78.66 },
+    punjab:           { lat: 31.15, lng: 75.34 },
+    andhra_pradesh:   { lat: 15.91, lng: 79.74 },
+    telangana:        { lat: 17.12, lng: 79.02 },
+    odisha:           { lat: 20.94, lng: 85.10 },
+    bihar:            { lat: 25.09, lng: 85.31 },
+    assam:            { lat: 26.24, lng: 92.54 },
+    jammu_kashmir:    { lat: 33.73, lng: 76.93 },
+    ladakh:           { lat: 34.15, lng: 77.58 },
+    sikkim:           { lat: 27.53, lng: 88.51 },
+    arunachal_pradesh:{ lat: 28.22, lng: 94.73 },
+    nagaland:         { lat: 26.16, lng: 94.56 },
+    manipur:          { lat: 24.67, lng: 93.91 },
+    mizoram:          { lat: 23.16, lng: 92.94 },
+    tripura:          { lat: 23.94, lng: 91.99 },
+    jharkhand:        { lat: 23.61, lng: 85.28 },
+    chhattisgarh:     { lat: 21.28, lng: 81.87 },
+    haryana:          { lat: 29.06, lng: 76.08 },
+    chandigarh:       { lat: 30.74, lng: 76.79 },
+    puducherry:       { lat: 11.94, lng: 79.81 },
+    andaman:          { lat: 11.74, lng: 92.66 },
+    lakshadweep:      { lat: 10.57, lng: 72.64 },
+    delhi:            { lat: 28.70, lng: 77.10 },
+  };
+
+  function latLngToSVG(lat, lng) {
+    const x = ((lng - 68) / (98 - 68)) * 680 + 80;
+    const y = ((37 - lat) / (37 - 8)) * 760 + 50;
+    return { x, y };
+  }
+
+  const FALLBACK_STATES = [
+    { id:"rajasthan",     name:"Rajasthan",     capital:"Jaipur",             region:"North India",    category:"Heritage",  emoji:"🏰", tagline:"The Land of Kings",    bestTime:"Oct–Mar", image:"https://images.unsplash.com/photo-1599661046289-e31897846e41?w=400&q=70", heroImage:"https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&q=80", places:[{name:"Hawa Mahal",city:"Jaipur",category:"Heritage",image:"https://images.unsplash.com/photo-1599661046289-e31897846e41?w=200&q=60"}] },
+    { id:"kerala",        name:"Kerala",        capital:"Thiruvananthapuram", region:"South India",    category:"Nature",    emoji:"🌴", tagline:"God's Own Country",    bestTime:"Sep–Mar", image:"https://images.unsplash.com/photo-1609920658906-8223bd289001?w=400&q=70", heroImage:"https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800&q=80", places:[{name:"Alleppey Backwaters",city:"Alappuzha",category:"Nature",image:"https://images.unsplash.com/photo-1609920658906-8223bd289001?w=200&q=60"}] },
+    { id:"uttarakhand",   name:"Uttarakhand",   capital:"Dehradun",          region:"North India",    category:"Adventure", emoji:"🏔️", tagline:"Land of Gods",         bestTime:"Mar–Jun", image:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70", heroImage:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80", places:[{name:"Valley of Flowers",city:"Chamoli",category:"Nature",image:"https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?w=200&q=60"}] },
+    { id:"goa",           name:"Goa",           capital:"Panaji",            region:"West India",     category:"Adventure", emoji:"🏖️", tagline:"Sun, Sand & Soul",     bestTime:"Nov–Mar", image:"https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=400&q=70", heroImage:"https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&q=80", places:[{name:"Calangute Beach",city:"North Goa",category:"Adventure",image:"https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=200&q=60"}] },
+    { id:"uttar_pradesh", name:"Uttar Pradesh", capital:"Lucknow",           region:"North India",    category:"Heritage",  emoji:"🕌", tagline:"Heart of India",       bestTime:"Oct–Mar", image:"https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400&q=70", heroImage:"https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&q=80", places:[{name:"Taj Mahal",city:"Agra",category:"Heritage",image:"https://images.unsplash.com/photo-1564507592333-c60657eea523?w=200&q=60"}] },
+    { id:"ladakh",        name:"Ladakh",        capital:"Leh",               region:"North India",    category:"Adventure", emoji:"🏔️", tagline:"Land of High Passes",  bestTime:"Jun–Sep", image:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&q=70", heroImage:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80", places:[{name:"Pangong Lake",city:"Leh",category:"Nature",image:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200&q=60"}] },
+  ];
+
+  let allStates = [];
+  let filteredStates = [];
+  let selectedState = null;
+  let currentCategory = 'All';
+  let currentSearch = '';
+
+  async function fetchStates() {
+    try {
+      const res = await fetch(`${API_BASE}/states`, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      return json.data || [];
+    } catch (err) {
+      console.warn('API unreachable, using fallback.', err.message);
+      return null;
+    }
+  }
+
+  async function init() {
+    const data = await fetchStates();
+    if (!data) {
+      allStates = FALLBACK_STATES;
+      document.getElementById('api-warn').classList.add('show');
+    } else {
+      allStates = data;
+    }
+    filteredStates = [...allStates];
+    hideLoader();
+    renderList();
+    renderMarkers();
+    updateStats();
+    bindMapPaths();
+    bindUI();
+  }
+
+  function hideLoader() {
+    document.getElementById('list-loader').style.display = 'none';
+    document.getElementById('state-list').style.display  = 'block';
+    document.getElementById('stats-bar').style.display   = 'flex';
+    const total = allStates.reduce((s, st) => s + (st.places?.length || 0), 0);
+    document.getElementById('panel-sub').textContent = `${allStates.length} states · ${total} destinations`;
+  }
+
+  function updateStats() {
+    const total = filteredStates.reduce((s, st) => s + (st.places?.length || 0), 0);
+    document.getElementById('stat-states').textContent = filteredStates.length;
+    document.getElementById('stat-places').textContent = total;
+  }
+
+  function renderList() {
+    const list = document.getElementById('state-list');
+    if (!filteredStates.length) {
+      list.innerHTML = '<p style="padding:20px;color:var(--muted);font-size:0.85rem">No states match your filter.</p>';
+      return;
+    }
+    list.innerHTML = filteredStates
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(s => `
+        <div class="state-item${selectedState?.id === s.id ? ' selected' : ''}"
+             data-id="${s.id}" onclick="selectStateById('${s.id}')">
+          <span class="state-emoji">${s.emoji || '📍'}</span>
+          <div class="state-info">
+            <div class="state-name">${s.name}</div>
+            <div class="state-meta">${s.capital} · ${s.region}</div>
+          </div>
+          <span class="state-count">${s.places?.length || 0}</span>
+        </div>`).join('');
+  }
+
+  function renderMarkers() {
+    const layer = document.getElementById('markers-layer');
+    layer.innerHTML = '';
+    allStates.forEach(s => {
+      const coords = STATE_COORDS[s.id];
+      if (!coords) return;
+      const { x, y } = latLngToSVG(coords.lat, coords.lng);
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'map-marker');
+      g.setAttribute('data-id', s.id);
+      g.setAttribute('transform', `translate(${x},${y})`);
+      g.innerHTML = `
+        <circle r="6" fill="var(--accent)" opacity="0.85" stroke="white" stroke-width="1.5"/>
+        <circle r="2.5" fill="white"/>`;
+      g.addEventListener('click',      () => selectStateById(s.id));
+      g.addEventListener('mouseenter', (e) => showTooltip(s, e));
+      g.addEventListener('mouseleave', hideTooltip);
+      layer.appendChild(g);
+    });
+  }
+
+  function bindMapPaths() {
+    document.querySelectorAll('.state-path').forEach(path => {
+      const stateId = path.id.replace('path-', '');
+      path.addEventListener('click',      () => selectStateById(stateId));
+      path.addEventListener('mouseenter', (e) => {
+        const st = allStates.find(s => s.id === stateId);
+        if (st) showTooltip(st, e);
+      });
+      path.addEventListener('mouseleave', hideTooltip);
+    });
+  }
+
+  function selectStateById(id) {
+    const st = allStates.find(s => s.id === id);
+    if (!st) return;
+    selectedState = st;
+    document.querySelectorAll('.state-item').forEach(el => {
+      el.classList.toggle('selected', el.dataset.id === id);
+    });
+    const el = document.querySelector(`.state-item[data-id="${id}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    document.querySelectorAll('.state-path').forEach(p => p.classList.remove('active'));
+    const path = document.getElementById(`path-${id}`);
+    if (path) path.classList.add('active');
+    openDetailPanel(st);
+    hideTooltip();
+  }
+
+  let tooltipTimer;
+  function showTooltip(st, e) {
+    clearTimeout(tooltipTimer);
+    const tt = document.getElementById('map-tooltip');
+    document.getElementById('tt-name').textContent = `${st.emoji || ''} ${st.name}`;
+    document.getElementById('tt-meta').innerHTML =
+      `${st.capital} · ${st.region}<br>${st.places?.length || 0} destinations · Best: ${st.bestTime}`;
+    document.getElementById('tt-btn').href = `state.html?state=${st.id}`;
+    const mapRect = document.getElementById('map-area').getBoundingClientRect();
+    let x = e.clientX - mapRect.left + 14;
+    let y = e.clientY - mapRect.top  - 10;
+    if (x + 260 > mapRect.width)  x = e.clientX - mapRect.left - 260;
+    if (y + 120 > mapRect.height) y = e.clientY - mapRect.top  - 120;
+    tt.style.left = x + 'px';
+    tt.style.top  = y + 'px';
+    tt.classList.add('show');
+  }
+
+  function hideTooltip() {
+    tooltipTimer = setTimeout(() => {
+      document.getElementById('map-tooltip').classList.remove('show');
+    }, 120);
+  }
+
+  document.getElementById('map-tooltip').addEventListener('mouseenter', () => clearTimeout(tooltipTimer));
+  document.getElementById('map-tooltip').addEventListener('mouseleave', hideTooltip);
+
+  function openDetailPanel(st) {
+    document.getElementById('dp-img').src             = st.heroImage || st.image || '';
+    document.getElementById('dp-img').alt             = st.name;
+    document.getElementById('dp-title').textContent   = `${st.emoji || ''} ${st.name}`;
+    document.getElementById('dp-tagline').textContent = st.tagline || '';
+    document.getElementById('dp-explore').href        = `state.html?state=${st.id}`;
+    document.getElementById('dp-chips').innerHTML = [
+      st.capital  ? `<span class="detail-chip">🏙️ ${st.capital}</span>`                       : '',
+      st.bestTime ? `<span class="detail-chip">📅 ${st.bestTime}</span>`                       : '',
+      st.category ? `<span class="detail-chip">🏷️ ${st.category}</span>`                       : '',
+      st.language ? `<span class="detail-chip">🗣️ ${st.language?.split('/')[0].trim()}</span>` : '',
+    ].join('');
+    const places = (st.places || []).slice(0, 4);
+    document.getElementById('dp-places').innerHTML = places.map(p => `
+      <a class="place-mini" href="state.html?state=${st.id}&place=${p.id || ''}">
+        <img class="place-mini-img" src="${p.image || ''}" alt="${p.name}"
+             onerror="this.style.background='#EDE0D0'" loading="lazy"/>
+        <div>
+          <div class="place-mini-name">${p.name}</div>
+          <div class="place-mini-city">📍 ${p.city} · ${p.category}</div>
+        </div>
+      </a>`).join('');
+    document.getElementById('detail-panel').classList.add('open');
+  }
+
+  document.getElementById('detail-close').addEventListener('click', () => {
+    document.getElementById('detail-panel').classList.remove('open');
+    document.querySelectorAll('.state-path').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.state-item').forEach(el => el.classList.remove('selected'));
+    selectedState = null;
+  });
+
+  function applyFilter() {
+    filteredStates = allStates.filter(s => {
+      const matchCat    = currentCategory === 'All' || s.category === currentCategory;
+      const matchSearch = !currentSearch ||
+        s.name.toLowerCase().includes(currentSearch) ||
+        s.capital.toLowerCase().includes(currentSearch) ||
+        s.region.toLowerCase().includes(currentSearch);
+      return matchCat && matchSearch;
+    });
+    renderList();
+    updateStats();
+    document.querySelectorAll('.state-path').forEach(path => {
+      const id = path.id.replace('path-', '');
+      path.style.opacity = filteredStates.find(s => s.id === id) ? '1' : '0.25';
+    });
+  }
+
+  function bindUI() {
+    document.querySelectorAll('.cat-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentCategory = pill.dataset.cat;
+        applyFilter();
+      });
+    });
+    document.getElementById('state-search').addEventListener('input', e => {
+      currentSearch = e.target.value.trim().toLowerCase();
+      applyFilter();
+    });
+  }
+
+  window.selectStateById = selectStateById;
+  init();
+  </script>
+</body>
+</html>
