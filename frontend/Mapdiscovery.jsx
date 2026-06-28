@@ -9,7 +9,7 @@ const API_BASE = (() => {
   ) {
     return "http://localhost:5000/api";
   }
-  return "/api";
+  return "https://travelbahartt.onrender.com/api";
 })();
 
 // ── Category colour map ───────────────────────────────────────

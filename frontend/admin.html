@@ -536,7 +536,7 @@ const API_BASE = (function () {
   if (window.location.protocol === 'file:' || ['5500','5173'].includes(window.location.port)) {
     return 'http://localhost:5000/api';
   }
-  return '/api';
+  return 'https://travelbahartt.onrender.com/api';
 })();
 
 function getToken()  { return localStorage.getItem('tb_admin_token'); }
