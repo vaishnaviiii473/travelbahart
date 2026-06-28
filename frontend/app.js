@@ -50,19 +50,26 @@ async function apiGet(path) {
   }
 }
 
+// ── FIX 1: Retry logic added so categories render even after cold start ──
 async function loadAllStates() {
   if (STATES_LOADED) return STATES_DATA;
   showLoadingBanner();
-  try {
-    const json = await apiGet('/states');
-    STATES_DATA = json.data || [];
-    STATES_LOADED = true;
-    hideLoadingBanner();
-  } catch (err) {
-    hideLoadingBanner();
-    console.error('Failed to load states from API:', err);
-    showApiError();
-    STATES_DATA = [];
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const json = await apiGet('/states');
+      STATES_DATA = json.data || [];
+      STATES_LOADED = true;
+      hideLoadingBanner();
+      return STATES_DATA;
+    } catch (err) {
+      console.warn(`Load attempt ${attempt} failed:`, err);
+      if (attempt === 2) {
+        hideLoadingBanner();
+        console.error('Failed to load states from API:', err);
+        showApiError();
+        STATES_DATA = [];
+      }
+    }
   }
   return STATES_DATA;
 }
@@ -141,6 +148,7 @@ async function renderHomePage() {
   renderLesserKnownGems();
   initHeroSearch();
   initMainSearch();
+  setTimeout(initScrollAnimations, 100);
 }
 
 function showLoadingState() {
@@ -167,6 +175,7 @@ function renderCategoriesSection() {
       <div class="cat-name">${c.name}</div>
       <div class="cat-count">${c.count} destinations</div>
     </a>`).join('');
+  setTimeout(initScrollAnimations, 50);
 }
 
 async function filterByCategory(cat, e) {
@@ -382,62 +391,66 @@ function filterPlaces(cat, btn) {
   renderPlaces(filtered, state);
 }
 
-let _galleryImages = [];
-let _galleryIdx = 0;
+// ── FIX 2: Removed duplicate _galleryImages, _galleryIdx, setGalleryImage,
+//    galleryNav declarations — these now live only in state.html inline script.
+//    openModal here is a fallback for index.html (no gallery strip needed there).
 
 function openModal(place, stateName) {
+  // On state.html, window.openModal is overridden by the inline script.
+  // This version is used on index.html where the modal has no gallery strip.
   const modal = document.getElementById('place-modal');
   if (!modal) return;
   const p = typeof place === 'string' ? JSON.parse(place) : place;
-  _galleryImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
-  _galleryIdx = 0;
+
+  // Use window globals set by state.html inline script if available
+  if (typeof window._galleryImages !== 'undefined') {
+    window._galleryImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+    window._galleryIdx = 0;
+  }
+
   const mainImg = document.getElementById('modal-img');
-  if (mainImg) { mainImg.style.opacity = '1'; mainImg.src = _galleryImages[0] || ''; }
+  const imgSrc = (p.images && p.images.length) ? p.images[0] : (p.image || '');
+  if (mainImg) { mainImg.style.opacity = '1'; mainImg.src = imgSrc; }
+
   const counter = document.getElementById('img-counter');
-  if (counter) counter.textContent = `1 / ${_galleryImages.length || 1}`;
+  const totalImgs = (p.images && p.images.length) ? p.images.length : 1;
+  if (counter) counter.textContent = `1 / ${totalImgs}`;
+
   const strip = document.getElementById('gallery-strip');
   if (strip) {
-    if (_galleryImages.length > 1) {
-      strip.innerHTML = _galleryImages.map((src, i) => `
+    const imgs = (p.images && p.images.length > 1) ? p.images : [];
+    if (imgs.length) {
+      strip.innerHTML = imgs.map((src, i) => `
         <div class="gallery-thumb${i === 0 ? ' active' : ''}" onclick="setGalleryImage(${i})">
           <img src="${src}" alt="Photo ${i + 1}" loading="lazy"/>
         </div>`).join('');
       strip.style.display = 'flex';
     } else { strip.innerHTML = ''; strip.style.display = 'none'; }
   }
+
   const prevBtn = document.getElementById('gallery-prev');
   const nextBtn = document.getElementById('gallery-next');
   if (prevBtn) prevBtn.disabled = true;
-  if (nextBtn) nextBtn.disabled = _galleryImages.length <= 1;
+  if (nextBtn) nextBtn.disabled = totalImgs <= 1;
+
   document.getElementById('modal-title').textContent     = p.name;
   document.getElementById('modal-city').textContent      = `${p.city}, ${stateName}`;
   document.getElementById('modal-category').textContent  = p.category;
   document.getElementById('modal-best-time').textContent = p.bestTime;
   document.getElementById('modal-entry').textContent     = p.entryFee || 'Check locally';
   document.getElementById('modal-desc').textContent      = p.desc;
+
   const nearby = document.getElementById('modal-nearby');
   if (nearby) nearby.innerHTML = (p.nearby || []).map(n => `<span class="nearby-tag">📍 ${n}</span>`).join('');
+
   const mapSlot = document.getElementById('modal-map-link');
-  if (mapSlot) mapSlot.innerHTML = p.mapLink ? `<a href="${p.mapLink}" target="_blank" rel="noopener noreferrer" class="btn-maps">🗺️ View on Google Maps</a>` : '';
+  if (mapSlot) mapSlot.innerHTML = p.mapLink
+    ? `<a href="${p.mapLink}" target="_blank" rel="noopener noreferrer" class="btn-maps">🗺️ View on Google Maps</a>`
+    : '';
+
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-
-function setGalleryImage(idx) {
-  if (!_galleryImages.length) return;
-  _galleryIdx = Math.max(0, Math.min(idx, _galleryImages.length - 1));
-  const img = document.getElementById('modal-img');
-  if (img) { img.style.opacity = '0'; setTimeout(() => { img.src = _galleryImages[_galleryIdx]; img.style.opacity = '1'; }, 150); }
-  const counter = document.getElementById('img-counter');
-  if (counter) counter.textContent = `${_galleryIdx + 1} / ${_galleryImages.length}`;
-  document.querySelectorAll('.gallery-thumb').forEach((t, i) => t.classList.toggle('active', i === _galleryIdx));
-  const prevBtn = document.getElementById('gallery-prev');
-  const nextBtn = document.getElementById('gallery-next');
-  if (prevBtn) prevBtn.disabled = _galleryIdx === 0;
-  if (nextBtn) nextBtn.disabled = _galleryIdx === _galleryImages.length - 1;
-}
-
-function galleryNav(dir) { setGalleryImage(_galleryIdx + dir); }
 
 function closeModal() {
   const modal = document.getElementById('place-modal');
@@ -450,8 +463,8 @@ document.addEventListener('keydown', e => {
   const modal = document.getElementById('place-modal');
   if (e.key === 'Escape') closeModal();
   if (modal && modal.classList.contains('open')) {
-    if (e.key === 'ArrowLeft')  galleryNav(-1);
-    if (e.key === 'ArrowRight') galleryNav(1);
+    if (e.key === 'ArrowLeft'  && typeof galleryNav === 'function') galleryNav(-1);
+    if (e.key === 'ArrowRight' && typeof galleryNav === 'function') galleryNav(1);
   }
 });
 
