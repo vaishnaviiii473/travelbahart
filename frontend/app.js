@@ -7,7 +7,7 @@ const API_BASE = (function () {
   if (window.location.protocol === 'file:' || window.location.port === '5500' || window.location.port === '5173') {
     return 'http://localhost:5000/api';
   }
-  return '/api';
+  return 'https://travelbartt.onrender.com/api';
 })();
 
 // ── IN-MEMORY CACHE ───────────────────────────────────────────
