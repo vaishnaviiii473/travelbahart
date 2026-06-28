@@ -2,43 +2,64 @@
 // TRAVELBHARAT - FRONTEND LOGIC (API-CONNECTED)
 // =============================================
 
-// ── CONFIG ───────────────────────────────────────────────────
 const API_BASE = (function () {
   if (window.location.protocol === 'file:' || window.location.port === '5500' || window.location.port === '5173') {
     return 'http://localhost:5000/api';
   }
-  return 'https://travelbahartt.onrender.com/api'; // ✅ FIXED: travelbahartt (double t)
+  return 'https://travelbahartt.onrender.com/api';
 })();
 
-// ── IN-MEMORY CACHE ───────────────────────────────────────────
 let STATES_DATA = [];
 let STATES_LOADED = false;
 
 const POPULAR_STATE_IDS = ["rajasthan", "kerala", "uttarakhand", "meghalaya", "goa", "himachal_pradesh"];
-
 const LESSER_KNOWN_GEMS = [
   { name: "Hampi, Karnataka", state: "karnataka", desc: "Step into a surreal landscape of boulders and the forgotten ruins of a mighty empire." },
   { name: "Varanasi Spirituals", state: "uttar_pradesh", desc: "Where the Ganga glows at dawn and death is celebrated as liberation." },
   { name: "Valley of Flowers", state: "uttarakhand", desc: "A secret Himalayan valley carpeted with impossible wildflower bloom." }
 ];
 
-// ==================== API HELPERS ====================
+function showLoadingBanner() {
+  if (document.getElementById('api-loading-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'api-loading-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#FF6B1A;color:white;text-align:center;padding:10px;font-family:sans-serif;font-size:13px;z-index:9999;';
+  banner.textContent = '⏳ Loading destinations... please wait a moment (first load takes ~30 seconds)';
+  document.body.prepend(banner);
+}
+
+function hideLoadingBanner() {
+  const banner = document.getElementById('api-loading-banner');
+  if (banner) banner.remove();
+}
+
 async function apiGet(path) {
-  const res = await fetch(`${API_BASE}${path}`);
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || `Request failed: ${res.status}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60000);
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.message || `Request failed: ${res.status}`);
+    }
+    return res.json();
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
   }
-  return res.json();
 }
 
 async function loadAllStates() {
   if (STATES_LOADED) return STATES_DATA;
+  showLoadingBanner();
   try {
     const json = await apiGet('/states');
     STATES_DATA = json.data || [];
     STATES_LOADED = true;
+    hideLoadingBanner();
   } catch (err) {
+    hideLoadingBanner();
     console.error('Failed to load states from API:', err);
     showApiError();
     STATES_DATA = [];
@@ -87,12 +108,10 @@ function showApiError() {
   document.body.prepend(banner);
 }
 
-// ==================== LOCAL HELPERS ====================
 function getStateLocal(id) { return STATES_DATA.find(s => s.id === id) || null; }
 function getAllPlacesLocal() { return STATES_DATA.flatMap(s => (s.places || []).map(p => ({ ...p, stateName: s.name, stateId: s.id }))); }
 function getStateParam() { return new URLSearchParams(window.location.search).get('state'); }
 
-// ==================== NAVBAR ====================
 function initNavbar() {
   const navbar = document.getElementById('navbar');
   if (!navbar) return;
@@ -104,7 +123,6 @@ function initNavbar() {
   }
 }
 
-// ==================== SCROLL ANIMATIONS ====================
 function initScrollAnimations() {
   const els = document.querySelectorAll('.fade-up');
   const observer = new IntersectionObserver((entries) => {
@@ -113,12 +131,10 @@ function initScrollAnimations() {
   els.forEach(el => observer.observe(el));
 }
 
-// ==================== HOME PAGE ====================
 async function renderHomePage() {
   showLoadingState();
   await loadAllStates();
   hideLoadingState();
-
   renderCategoriesSection();
   renderPopularStates();
   renderAllStatesAZ();
@@ -140,10 +156,10 @@ function renderCategoriesSection() {
   if (!grid) return;
   const allPlaces = getAllPlacesLocal();
   const cats = [
-    { name: "Heritage", icon: "🏛️", count: allPlaces.filter(p => p.category === "Heritage").length },
-    { name: "Nature",   icon: "🌿", count: allPlaces.filter(p => p.category === "Nature").length },
-    { name: "Religious",icon: "🕌", count: allPlaces.filter(p => p.category === "Religious").length },
-    { name: "Adventure",icon: "🧗", count: allPlaces.filter(p => p.category === "Adventure").length },
+    { name: "Heritage",  icon: "🏛️", count: allPlaces.filter(p => p.category === "Heritage").length },
+    { name: "Nature",    icon: "🌿", count: allPlaces.filter(p => p.category === "Nature").length },
+    { name: "Religious", icon: "🕌", count: allPlaces.filter(p => p.category === "Religious").length },
+    { name: "Adventure", icon: "🧗", count: allPlaces.filter(p => p.category === "Adventure").length },
   ];
   grid.innerHTML = cats.map((c) => `
     <a class="category-card fade-up" href="#" data-cat="${c.name}" onclick="filterByCategory('${c.name}',event)">
@@ -266,14 +282,11 @@ function showSearchResults(places, title) {
     </a>`).join('');
 }
 
-// ==================== STATE PAGE ====================
 async function renderStatePage() {
   const stateId = getStateParam();
-
   await loadAllStates().catch(() => {});
   let state = getStateLocal(stateId);
   if (!state) state = await fetchState(stateId);
-
   if (!state) {
     document.body.innerHTML = '<div style="padding:100px 5%;text-align:center"><h1>State not found</h1><a href="index.html">← Back to Home</a></div>';
     return;
@@ -282,23 +295,18 @@ async function renderStatePage() {
   if (typeof window.updateStateSEO === 'function') window.updateStateSEO(state);
   const heroBg = document.getElementById('state-hero-bg-img');
   if (heroBg) heroBg.src = state.heroImage;
-
   const heroTitle = document.getElementById('state-hero-title');
   if (heroTitle) heroTitle.textContent = state.name;
-
   const heroTitleMain = document.getElementById('state-hero-title-main');
   if (heroTitleMain) heroTitleMain.textContent = state.name;
-
   const heroTagline = document.getElementById('state-hero-tagline');
   if (heroTagline) heroTagline.textContent = state.tagline;
-
   const heroMeta = document.getElementById('state-hero-meta');
   if (heroMeta) heroMeta.innerHTML = `
     <div class="meta-item"><span class="meta-icon">📅</span> Best Time: ${state.bestTime}</div>
     <div class="meta-item"><span class="meta-icon">🗣️</span> ${state.language}</div>
     <div class="meta-item"><span class="meta-icon">🍽️</span> ${state.cuisine}</div>
   `;
-
   const factsGrid = document.getElementById('facts-grid');
   if (factsGrid) factsGrid.innerHTML = `
     <div class="fact-item"><span class="fact-icon">📍</span><span class="fact-value">${state.capital}</span><span class="fact-label">Capital</span></div>
@@ -307,7 +315,6 @@ async function renderStatePage() {
     <div class="fact-item"><span class="fact-icon">📅</span><span class="fact-value">${state.bestTime}</span><span class="fact-label">Best Time</span></div>
     <div class="fact-item"><span class="fact-icon">🍽️</span><span class="fact-value">${state.cuisine.split('/')[0].trim()}</span><span class="fact-label">Local Food</span></div>
   `;
-
   const aboutText = document.getElementById('about-text');
   if (aboutText) aboutText.innerHTML = `
     <p>${state.about}</p>
@@ -317,31 +324,25 @@ async function renderStatePage() {
       <li><span class="highlight-icon">🛣️</span> National Highways accessible</li>
       <li><span class="highlight-icon">🏨</span> Accommodation for every budget available</li>
     </ul>`;
-
   const aboutImages = document.getElementById('about-images');
   if (aboutImages && (state.places || []).length >= 1) {
     const imgs = state.places.slice(0, 3);
     aboutImages.innerHTML = imgs.map(p => `<div class="about-img"><img src="${p.image}" alt="${p.name}" loading="lazy"></div>`).join('');
   }
-
   const placesSectionTitle = document.getElementById('places-section-title');
   if (placesSectionTitle) placesSectionTitle.textContent = `Explore ${state.name}`;
-
   const cats = ['All', ...new Set((state.places || []).map(p => p.category))];
   const filtersEl = document.getElementById('places-filter');
   if (filtersEl) {
     filtersEl.innerHTML = cats.map((c, i) => `
       <button class="filter-btn${i === 0 ? ' active' : ''}" data-cat="${c}" onclick="filterPlaces('${c}', this)">${c}</button>`).join('');
   }
-
   renderPlaces(state.places || [], state);
-
   const placeParam = new URLSearchParams(window.location.search).get('place');
   if (placeParam) {
     const place = (state.places || []).find(p => p.id === placeParam);
     if (place) setTimeout(() => openModal(place, state.name), 400);
   }
-
   window.__currentState = state;
 }
 
@@ -381,29 +382,19 @@ function filterPlaces(cat, btn) {
   renderPlaces(filtered, state);
 }
 
-// ==================== MODAL (with image gallery support) ====================
 let _galleryImages = [];
 let _galleryIdx = 0;
 
 function openModal(place, stateName) {
   const modal = document.getElementById('place-modal');
   if (!modal) return;
-
   const p = typeof place === 'string' ? JSON.parse(place) : place;
-
-  // Build gallery array: use p.images[] if present, else fall back to single p.image
   _galleryImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
   _galleryIdx = 0;
-
   const mainImg = document.getElementById('modal-img');
-  if (mainImg) {
-    mainImg.style.opacity = '1';
-    mainImg.src = _galleryImages[0] || '';
-  }
-
+  if (mainImg) { mainImg.style.opacity = '1'; mainImg.src = _galleryImages[0] || ''; }
   const counter = document.getElementById('img-counter');
   if (counter) counter.textContent = `1 / ${_galleryImages.length || 1}`;
-
   const strip = document.getElementById('gallery-strip');
   if (strip) {
     if (_galleryImages.length > 1) {
@@ -412,37 +403,22 @@ function openModal(place, stateName) {
           <img src="${src}" alt="Photo ${i + 1}" loading="lazy"/>
         </div>`).join('');
       strip.style.display = 'flex';
-    } else {
-      strip.innerHTML = '';
-      strip.style.display = 'none';
-    }
+    } else { strip.innerHTML = ''; strip.style.display = 'none'; }
   }
-
   const prevBtn = document.getElementById('gallery-prev');
   const nextBtn = document.getElementById('gallery-next');
   if (prevBtn) prevBtn.disabled = true;
   if (nextBtn) nextBtn.disabled = _galleryImages.length <= 1;
-
   document.getElementById('modal-title').textContent     = p.name;
   document.getElementById('modal-city').textContent      = `${p.city}, ${stateName}`;
   document.getElementById('modal-category').textContent  = p.category;
   document.getElementById('modal-best-time').textContent = p.bestTime;
   document.getElementById('modal-entry').textContent     = p.entryFee || 'Check locally';
   document.getElementById('modal-desc').textContent      = p.desc;
-
   const nearby = document.getElementById('modal-nearby');
-  if (nearby) {
-    nearby.innerHTML = (p.nearby || []).map(n => `<span class="nearby-tag">📍 ${n}</span>`).join('');
-  }
-
-  // ── MAP LINK ──────────────────────────────────────────
+  if (nearby) nearby.innerHTML = (p.nearby || []).map(n => `<span class="nearby-tag">📍 ${n}</span>`).join('');
   const mapSlot = document.getElementById('modal-map-link');
-  if (mapSlot) {
-    mapSlot.innerHTML = p.mapLink
-      ? `<a href="${p.mapLink}" target="_blank" rel="noopener noreferrer" class="btn-maps">🗺️ View on Google Maps</a>`
-      : '';
-  }
-
+  if (mapSlot) mapSlot.innerHTML = p.mapLink ? `<a href="${p.mapLink}" target="_blank" rel="noopener noreferrer" class="btn-maps">🗺️ View on Google Maps</a>` : '';
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -450,41 +426,25 @@ function openModal(place, stateName) {
 function setGalleryImage(idx) {
   if (!_galleryImages.length) return;
   _galleryIdx = Math.max(0, Math.min(idx, _galleryImages.length - 1));
-
   const img = document.getElementById('modal-img');
-  if (img) {
-    img.style.opacity = '0';
-    setTimeout(() => {
-      img.src = _galleryImages[_galleryIdx];
-      img.style.opacity = '1';
-    }, 150);
-  }
-
+  if (img) { img.style.opacity = '0'; setTimeout(() => { img.src = _galleryImages[_galleryIdx]; img.style.opacity = '1'; }, 150); }
   const counter = document.getElementById('img-counter');
   if (counter) counter.textContent = `${_galleryIdx + 1} / ${_galleryImages.length}`;
-
-  document.querySelectorAll('.gallery-thumb').forEach((t, i) => {
-    t.classList.toggle('active', i === _galleryIdx);
-  });
-
+  document.querySelectorAll('.gallery-thumb').forEach((t, i) => t.classList.toggle('active', i === _galleryIdx));
   const prevBtn = document.getElementById('gallery-prev');
   const nextBtn = document.getElementById('gallery-next');
   if (prevBtn) prevBtn.disabled = _galleryIdx === 0;
   if (nextBtn) nextBtn.disabled = _galleryIdx === _galleryImages.length - 1;
 }
 
-function galleryNav(dir) {
-  setGalleryImage(_galleryIdx + dir);
-}
+function galleryNav(dir) { setGalleryImage(_galleryIdx + dir); }
 
 function closeModal() {
   const modal = document.getElementById('place-modal');
   if (modal) { modal.classList.remove('open'); document.body.style.overflow = ''; }
 }
 
-function handleModalClick(e) {
-  if (e.target === e.currentTarget) closeModal();
-}
+function handleModalClick(e) { if (e.target === e.currentTarget) closeModal(); }
 
 document.addEventListener('keydown', e => {
   const modal = document.getElementById('place-modal');
@@ -495,7 +455,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
   if (document.getElementById('home-page'))  renderHomePage();
