@@ -488,7 +488,7 @@
   const API_BASE = (() => {
     const { protocol, port } = window.location;
     if (protocol === 'file:' || port === '5500' || port === '5173') return 'http://localhost:5000/api';
-    return '/api';
+    return 'https://travelbahartt.onrender.com/api';
   })();
 
   const STATE_COORDS = {
